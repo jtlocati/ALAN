@@ -8,8 +8,6 @@ RUN_NAME = "y11s_640_v1"
 
 
 def main() -> None:
-    if not YMAL_DATA.exists():
-        raise SystemExit(f"no dataset at {YMAL_DATA} - run extract_DS.py first")
 
     model = YOLO("yolo11s.pt")
 
