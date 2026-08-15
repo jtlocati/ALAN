@@ -1,0 +1,39 @@
+#ensure DS is in working condtion
+
+import sys
+from collections import Counter
+from pathlib import Path
+import yaml
+
+def audit(dataset: Path, sample_img: int = 300) -> None:
+    config = yaml.safe_load((dataset/ "data.yaml"))
+    #check class names
+    names = config["names"]
+    if isinstance(names, dict):
+        for i in sorted(names):
+            names = names[i]
+            print(f"{'='*6}{dataset.name}{'='*6}")
+            print(f"classes: {len(names)}: {names}")
+
+    counts: Counter[str] = Counter()
+    #bouding boxes
+    widths: list[float] = []
+    height: list[float] = []
+
+    labels = dataset / "train" / "labels"
+    files_labels = sorted(labels.glob("*.txt"))
+    print(f"{'='*6} Train Label Files: {len(labels)}")
+
+    for lf in labels:
+        for line in lf.read_text().splitline:
+            parts = line.split()
+            if len(parts) < 5:
+                continue
+
+            contrls = int(parts[0])
+            w,h = float(parts[3]), float(parts[4])
+            counts[names[contrls]] +=1
+            widths.append(w)
+            height.append(h)
+
+    total = sum(counts.values())
