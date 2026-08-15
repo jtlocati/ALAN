@@ -8,7 +8,7 @@ from PIL import Image
 
 
 def audit(dataset: Path, sample_img: int = 300) -> None:
-    config = yaml.safe_load((dataset/ "data.yaml"))
+    config = yaml.safe_load((dataset / "data.yaml").read_text(encoding="utf-8"))
     #check class names
     names = config["names"]
     if isinstance(names, dict):
@@ -24,10 +24,10 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
 
     labels = dataset / "train" / "labels"
     files_labels = sorted(labels.glob("*.txt"))
-    print(f"{'='*6} Train Label Files: {len(labels)}")
+    print(f"{'='*6} Train Label Files: {len(files_labels)}")
 
     for lf in labels:
-        for line in lf.read_text().splitline:
+        for line in files_labels.read_text().splitline:
             parts = line.split()
             if len(parts) < 5:
                 continue
@@ -39,7 +39,7 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
             height.append(h)
 
     total = sum(counts.values())
-    print(f"total boxes: {total}   mean per image: {total / max(1, len(labels)):.1f}")
+    print(f"total boxes: {total}   mean per image: {total / max(1, len(files_labels)):.1f}")
 
     print("rarest 8")
     for name, n, in counts.most_common[-8]:
