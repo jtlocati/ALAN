@@ -55,4 +55,18 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
 
     print(f"missing classes: {missing_labels}")
 
+    ratio = max(counts.values()) / max(1, min(counts.values()))
+
+    print(f"imbalance ratio: {ratio}")
+
+    #find box resolution + resolvable size BB scope 
+
     
+
+
+if __name__ == "__main__":
+    path = Path(sys.argv[1]) if len(sys.argv) > 1 else Path("data/datasets")
+    for name in ("cards", "chips"):
+        dir = path / name
+        if (dir / "data.yaml").exists():
+            audit(dir)    
