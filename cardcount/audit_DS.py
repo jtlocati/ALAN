@@ -4,6 +4,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 import yaml
+from PIL import Image
 
 
 def audit(dataset: Path, sample_img: int = 300) -> None:
@@ -60,8 +61,29 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
     print(f"imbalance ratio: {ratio}")
 
     #find box resolution + resolvable size BB scope 
+    img_dir = dataset / "train" / "images"
+    img_files = sorted(img_dir.iterdir())[:sample_img]
+    sizes = Counter(Image.open(p).size for p in img_files)
+    print(f"\nimage sizes (sampled {len(img_files)}): {sizes.most_common(3)}")
 
-    
+    (img_w, img_h), _ = sizes.most_common(1)[0]
+
+    def pct(values: list[float], p: float) -> float:
+        s = sorted(values)
+        return s[int(p * (len(s) - 1))]
+
+    print(f"\nbox size in pixels at {img_w}x{img_h} (this is the feasibility number):")
+    for p, tag in [(0.05, " 5th"), (0.50, "50th"), (0.95, "95th")]:
+        print(f" {tag} pct: {pct(widths, p) * img_w:6.1f} x {pct(height , p) * img_h:6.1f}")
+
+    median_px = min(pct(widths, 0.5) * img_w, pct(height, 0.5) * img_h)
+    if median_px < 16:
+        print(f"{'='*6} Yo these results are not chill dog, px: {median_px} / 16, hella not chill {'='*6}")
+
+    else:
+        print(f"\nOK: median box ~{median_px:.0f}px, comfortably resolvable.")
+
+
 
 
 if __name__ == "__main__":
