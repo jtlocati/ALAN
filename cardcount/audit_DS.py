@@ -11,11 +11,11 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
     config = yaml.safe_load((dataset / "data.yaml").read_text(encoding="utf-8"))
     #check class names
     names = config["names"]
+
     if isinstance(names, dict):
-        for i in sorted(names):
-            names = names[i]
-            print(f"{'='*6}{dataset.name}{'='*6}")
-            print(f"classes: {len(names)}: {names}")
+        names = [names[i] for i in sorted(names)]
+    print(f"{'='*6}{dataset.name}{'='*6}")
+    print(f"classes: {len(names)}: {names}")
 
     counts: Counter[str] = Counter()
     #bouding boxes
@@ -27,7 +27,7 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
     print(f"{'='*6} Train Label Files: {len(files_labels)}")
 
     for lf in labels:
-        for line in files_labels.read_text().splitline:
+        for line in lf.read_text().splitlines():
             parts = line.split()
             if len(parts) < 5:
                 continue
@@ -42,21 +42,24 @@ def audit(dataset: Path, sample_img: int = 300) -> None:
     print(f"total boxes: {total}   mean per image: {total / max(1, len(files_labels)):.1f}")
 
     print("rarest 8")
-    for name, n, in counts.most_common[-8]:
+    for name, n, in counts.most_common()[-8]:
         print(f"{name} : {n:>5}")
     print("common 8")
-    for name, n in counts.most_common[8]:
+    for name, n in counts.most_common(8):
         print(f"{name} => {n:>5}")
 
 
     missing_labels = []
     for n in names:
         if counts[n] == 0:
-            missing_labels.append(counts[n])
+            missing_labels.append(n)
 
     print(f"missing classes: {missing_labels}")
 
-    ratio = max(counts.values()) / max(1, min(counts.values()))
+    if counts > 0:
+        ratio = max(counts.values()) / max(1, min(counts.values()))
+    else:
+        ratio = 0
 
     print(f"imbalance ratio: {ratio}")
 
