@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from roboflow import Roboflow
+import yaml
 
 DATASET_LOCATION = Path(os.environ.get("ALAN_DS", "data/datasets"))
 
@@ -45,3 +46,19 @@ def DownloadData() -> dict[str, Path]:
             print(f"{name.upper()} => {paths[name]} AS YOLOv11")
 
     return paths
+
+def DTYMAL(dataset: Path) -> None:
+    ymal_path = dataset / "data.ymal"
+    config = yaml.safe_load(ymal_path.read_text())
+
+    for split in ("train", "val", "test"):
+        if split in config:
+            config[split] = str((dataset / split / "images").resolve())
+
+    ymal_path.write_text(yaml.safe_dump(config, sort_keys=False))
+    print(f"{dataset.name} yaml safe path complete")
+
+
+if __name__ == "__main__":
+    for name, path in DownloadData.items():
+        DTYMAL(path)
