@@ -7,7 +7,7 @@ DATASET_LOCATION = Path(os.environ.get("ALAN_DS", "data/datasets"))
 
 DATASET_LOCATION.mkdir(parents=True, exist_ok=True)
 
-TARGETS = (("yolo-knife-training", "playing-cards-pwfqi", 3, "cards"),("lk-w3yv9", "poker-chips-jjjw7", 1, "chips"),)
+TARGETS = (("augmented-startups", "playing-cards-ow27d", 4, "cards"), ("jvdm", "pokerchips-tltea", 7, "chips"),)
 
 KEY = os.environ.get("ROBO_API_KEY")
 
@@ -20,7 +20,7 @@ def DownloadData() -> dict[str, Path]:
 
     for workspace, project_slug, version, name in TARGETS:
         desitination = DATASET_LOCATION / name
-        if (desitination / "data.ymal").exists():
+        if (desitination / "data.yaml").exists():
             print(f"{'='*6}{name} FOUND AT: {desitination}, SKIPPING DOWNLOAD {'='*6}")
             paths[name] = desitination
             continue
@@ -48,7 +48,7 @@ def DownloadData() -> dict[str, Path]:
     return paths
 
 def DTYMAL(dataset: Path) -> None:
-    ymal_path = dataset / "data.ymal"
+    ymal_path = dataset / "data.yaml"
     config = yaml.safe_load(ymal_path.read_text())
 
     for split in ("train", "val", "test"):
@@ -57,8 +57,9 @@ def DTYMAL(dataset: Path) -> None:
 
     ymal_path.write_text(yaml.safe_dump(config, sort_keys=False))
     print(f"{dataset.name} yaml safe path complete")
+    print(f"{dataset.name} => {len(config.get('names', []))} classes: {config.get('names')}")
 
 
 if __name__ == "__main__":
-    for name, path in DownloadData.items():
+    for name, path in DownloadData().items():
         DTYMAL(path)
