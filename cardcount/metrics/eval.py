@@ -27,6 +27,13 @@ def main(weights: str, data: str) -> None:
 
     rows.sort(key=lambda r: r[2])
 
+    for name, prec, recal, map in rows:
+        if recal < 0.85:
+            flag = True
+        if flag:
+            print(f"{'='*6}{name} => WEAK {'='*6}")
+            print(f"Precision: {prec}\n Recall: {recal} \n mAP50: {map}")
+
 
 
 if __name__ == "__main__":
