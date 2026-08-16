@@ -34,7 +34,20 @@ def main(weights: str, data: str) -> None:
             print(f"{'='*6}{name} => WEAK {'='*6}")
             print(f"Precision: {prec}\n Recall: {recal} \n mAP50: {map}")
 
+    #evaluat count impact
+    impact = []
+    for name, prec, recal, map in rows:
+        if recal >= 0.85:
+            continue
+        weight = abs(BJ_COUNTS.get(rankCards(name), 0))
+        impact.append((name, (1 - recal) * (weight + 0.25)))
+
+    for name, score in sorted(impact, key=lambda x: -x[1]):
+        print(f"{name} count implication: {score}")
 
 
 if __name__ == "__main__":
-    main()
+    main(
+        weights="C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\runs\cards", #keep un resolved till model weights are stored
+        data="C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\data\datasets\cards\data.ymal"
+    )
