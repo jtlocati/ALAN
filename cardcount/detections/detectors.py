@@ -28,3 +28,20 @@ class Detector:
             device=self.device, half=self.half,
             verbose=False,   # otherwise ultralytics prints a line per frame
         )
+
+        boxes = results[0].boxes
+        if boxes is None or len(boxes) == 0:
+            return []
+
+        XYsqrt = boxes.xyxy.cpu().numpy()
+        confs = boxes.conf.cpu().numpy()
+        clss = boxes.cls.cpu().numpy().astype(int)
+
+        return [
+            Detection(
+                label=self.names[int(c)],
+                confidence=float(p),
+                box=(float(x1), float(y1), float(x2), float(y2)),
+            )
+            for (x1, y1, x2, y2), p, c in zip(XYsqrt, confs, clss)
+        ]
