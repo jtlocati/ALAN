@@ -48,6 +48,6 @@ def main(weights: str, data: str) -> None:
 
 if __name__ == "__main__":
     main(
-        weights="C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\runs\cards", #keep un resolved till model weights are stored
-        data="C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\data\datasets\cards\data.ymal"
+        weights=r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\runs\cards", #keep un resolved till model weights are stored
+        data=r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\cardcount\data\datasets\cards\data.ymal"
     )

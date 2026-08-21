@@ -16,9 +16,9 @@ class frameGrabbber:
         if not self.cap.isOpened():
             raise RuntimeError(f"COULD NOT OPEN CAMERA SOURCE @ {source}")
 
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc(*"MJPG"))
+        self.cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
+        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
 
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -55,7 +55,7 @@ def OpenCam(source: int | str = 0, width: int =1280, height: int=720) -> frameGr
 
 def sream(detector: Detector, source: int | str = 0, conf: float = 0.5, width: int = 1280, height: int = 720,) -> Iterator[tuple[numpy.ndarray, list[Detection]]]:
     grabber = frameGrabbber(source, width, height)
-    detector.warmup(grabber,height, grabber.width)
+    detector.warmup(grabber.height, grabber.width)
 
     try:
         while True:
@@ -71,5 +71,4 @@ def draw(frame: numpy.ndarray, detections: list[Detection], colour=(0, 255, 0)) 
     for d in detections:
         x1, y1, x2, y2 = d.int_box()
         cv2.rectangle(frame, (x1, y1), (x2, y2), colour, 2)
-        cv2.putText(frame, f"{d.label} {d.confidence:.2f}", (x1, max(12, y1 - 6)),
-                    cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 1, cv2.LINE_AA)
+        cv2.putText(frame, f"{d.label} {d.confidence:.2f}", (x1, max(12, y1 - 6)),cv2.FONT_HERSHEY_SIMPLEX, 0.5, colour, 1, cv2.LINE_AA)

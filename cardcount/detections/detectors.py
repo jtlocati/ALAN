@@ -1,12 +1,12 @@
 from pathlib import Path
 import numpy
 from ultralytics import YOLO
-from detections import Detection
+from cardcount.detections.detections import Detection
 
 class Detector:
     def __init__(self, weights: str | Path, imgsz: int = 640, device: str | int = "cpu", half: bool = False) -> None:
         weights = Path(weights)
-        if weights.is_file() is None:
+        if not weights.is_file():
             raise FileNotFoundError(f"{weights} is not a valid weights file")
 
         self.model = YOLO(str(weights))
@@ -18,7 +18,7 @@ class Detector:
         self.names: dict[int, str] = dict(self.model.names)
 
     def warmup(self, height: int = 480, width: int = 640) -> None:
-        blank = numpy.zeros((height, width, 3), dtype=numpy.unit8)
+        blank = numpy.zeros((height, width, 3), dtype=numpy.uint8)
         self.model.predict(blank, imgsz=self.imgsz, device=self.device, half=self.half, verbose=False)
 
 

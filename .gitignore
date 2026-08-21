@@ -5,3 +5,7 @@ notes.py
 .env
 
 data
+
+test.py
+
+__pycache__
