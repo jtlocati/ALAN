@@ -30,7 +30,7 @@ class Detection:
     
     def int_box(self) -> tuple[int, int, int, int]:
         x1, y1, x2, y2 = self.box
-        return(int(round(x1)), int(round(y1), int(round(x2), int(round(y2)))))
+        return (int(round(x1)), int(round(y1)), int(round(x2)), int(round(y2)))
 
     def __str__(self) -> str:
         tidy = ""

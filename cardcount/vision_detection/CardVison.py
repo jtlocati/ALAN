@@ -33,12 +33,13 @@ def main() -> None:
         frame_count = 0
 
         for lbl in present:
-            parsed_label = parsed_label(lbl)
+            rank = rankCards(lbl)
+            parsed_label = rankCards(lbl)
             first_value = parsed_label[0]
 
             value = BJ_COUNTS.get(first_value, 0)
 
-            frame_count += value
+            frame_count += BJ_COUNTS.get(rank, 0)
     
         print(f"{len(detections):2d} det | {len(present):2d} distinct | frame Hi-Lo {frame_count:+d} | {present}")
 
