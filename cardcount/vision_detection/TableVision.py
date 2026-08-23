@@ -6,7 +6,7 @@ from cardcount.detections.detectors import Detector
 from cardcount.metrics.eval import BJ_COUNTS, rankCards
 from cardcount.vision.camera import OpenCam, draw
 from cardcount.vision.table import analizeFrames
-from cardcount.vision.zones import draw_bands
+from cardcount.vision.zones import drawBands
 
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
@@ -61,7 +61,7 @@ def main() -> None:
                   f"pot >= ${potTotal} | hi-lo {dealerCount + playerCount:+d}")
 
             if showBands:
-                draw_bands(frame)
+                drawBands(frame)
 
             draw(frame, view.dealer, colour=(0, 225, 0))
             draw(frame, view.player, colour=(0, 225, 0))
@@ -80,3 +80,7 @@ def main() -> None:
     finally:
         cam.release()
         cv2.destroyAllWindows()
+
+
+if __name__ == "__main__":
+    main()

@@ -9,7 +9,7 @@ def analizeFrames(frame: numpy.ndarray, cardModel: Detector, chipmodel: Detector
     #run card model on whole frame
     cardDetection = cardModel.detect(frame, conf=card_conf)
 
-    buckets: dict[str, list[Detection]] = {b.nam: [] for b in bands}
+    buckets: dict[str, list[Detection]] = {b.name: [] for b in bands}
     for detection in cardDetection:
         name = band_for(detection, bands, frameHeight)
         if name is not None:
@@ -18,9 +18,10 @@ def analizeFrames(frame: numpy.ndarray, cardModel: Detector, chipmodel: Detector
 
     #crop fed image according to the params set in zones then run chip model
 
-    ChipBand = next(b for b in bands if b.name == CHIP_BAND )
+    ChipBand = next(b for b in bands if b.name == CHIP_BAND)
     Az, Yoffset = crop_band(frame, ChipBand)
-    ChipFrame = shift(Az, Yoffset)
+    chipDetections = chipmodel.detect(Az, conf=chip_conf)
+    chipDetections = shift(chipDetections, Yoffset)
 
     chipDetections = [d for d in chipDetections if band_for(d, bands, frameHeight) == CHIP_BAND]
 
@@ -28,4 +29,5 @@ def analizeFrames(frame: numpy.ndarray, cardModel: Detector, chipmodel: Detector
         dealer=buckets["dealer"],
         player=buckets["player"],
         pot=chipDetections,
+        unassigned=buckets[CHIP_BAND],
     )
