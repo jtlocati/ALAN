@@ -11,7 +11,7 @@ CAM = 1
 
 def main() -> None:
     cards = Detector(r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt", imgsz=imgSZ, device=DEV)
-    chips = Detector(f"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt", imgsz=imgSZ, device=DEV)
+    chips = Detector(r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt", imgsz=imgSZ, device=DEV)
 
     if cards is not None:
         print(f"{'='*6}CARDS LOADED: ATTR_NUM = {len((cards.names))}{'='*6}")

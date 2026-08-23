@@ -15,18 +15,22 @@ class Detection:
     @property
     def center(self) -> tuple[float, float]:
         x1, y1, x2, y2 = self.box
-        return ((x1 + x1) / 2, (y1 + y2) / 2)
+        return ((x1 + x2) / 2, (y1 + y2) / 2)
 
     @property
     def width(self) -> float:
+        return self.box[2] - self.box[0]
+
+    @property
+    def height(self) -> float:
         return self.box[3] - self.box[1]
 
     @property
     def area(self) -> float:
         return max(0.0, self.width) * max(0.0, self.height)
 
-    def WidthTrackId(self, track_id: int | None) -> "Detection":
-        return replace(self, track_id=track_id)
+    def withTrackId(self, trackId: int | None) -> "Detection":
+        return replace(self, trackId=trackId)
     
     def int_box(self) -> tuple[int, int, int, int]:
         x1, y1, x2, y2 = self.box
