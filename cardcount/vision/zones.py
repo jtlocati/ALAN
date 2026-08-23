@@ -17,7 +17,7 @@ class band:
         bottom = min(frame_height, int(self.y1 * frame_height))
         return top, bottom
 
-ROLES: tuple[band, ...] = band("dealer", 0.00, 0.33), band("pot", 0.33, 0.66), band("player": 0.66, 1)
+ROLES: tuple[band, ...] = (band("dealer", 0.00, 0.33), band("pot", 0.33, 0.66), band("player", 0.66, 1))
 
 CHIP_BAND = ROLES["pot"]
 CARD_BANDS = (ROLES["player"], ROLES["dealer"])
@@ -68,3 +68,12 @@ def shift(detections: list[Detection], dy: int) -> list[Detection]:
         out.append(replace(d, box=(x1, y1 + dy, x2, y2 + dy)))
     return out
 
+
+def drawBands(frame: numpy.ndarray, bands: tuple[band, ...] = ROLES) -> None:
+    h, w = frame.shape[:2]
+    for band in bands:
+        top, bottom = band.pixels(h)
+        cv2.line(frame, (0, top), (w, top), (90, 90, 90), 1, cv2.LINE_AA)
+        cv2.putText(frame, band.name, (8, top + 18), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (90, 90, 90), 1, cv2.LINE_AA)
+    bottom = bands[-1].pixels(h)[1]
+    cv2.line(frame, (0, bottom - 1), (w, bottom - 1), (90, 90, 90), 1, cv2.LINE_AA)
