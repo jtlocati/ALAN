@@ -7,7 +7,8 @@ from cardcount.detections.detectors import Detector
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-WEIGHTS = PROJECT_ROOT / "models" / "chips_best.pt"
+#include absolute weight path
+WEIGHTS = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 
 CONF = 0.5
 IMGsz = 640
