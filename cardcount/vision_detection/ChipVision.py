@@ -12,6 +12,7 @@ WEIGHTS = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 
 CONF = 0.5
 IMGsz = 640
+CAM = 1
 
 CHIP_NAMES = {"black chip": "black", "blue chip": "blue", "green chip": "green", "red chip": "red", "white chip": "white"}
 DENOMINATIONS = {"white": 1, "red": 5, "blue": 10, "green": 25, "black": 100}
@@ -25,7 +26,7 @@ def main():
     if detector is not None:
         print(f"running chip model raw: {detector.names.values }")
 
-    for frame, detect in sream(detector, source=0, conf=CONF):
+    for frame, detect in sream(detector, source=CAM, conf=CONF):
         counts = Counter(canolitical(d.label) for d in detect)
         total = sum(DENOMINATIONS.get(colour, 0) * n for colour, n in counts.items())
 
