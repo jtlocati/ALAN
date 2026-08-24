@@ -24,7 +24,7 @@ def collapseTop(detections: list[Detection]) -> ParTopCard:
 
     #mark cards with a dual apperence
     canidates = []
-    for label, group in byLabel.items:
+    for label, group in byLabel.items():
         if len(group >= 2):
             canidates.append(label)
 
@@ -46,6 +46,9 @@ def collapseTop(detections: list[Detection]) -> ParTopCard:
         cards.extend(group[:keep])
 
     return ParTopCard(cards, topConf, ambig, True)
+
+def conf(detections: list[Detection]) -> list[Detection]:
+    return collapseTop(detections).cards
 
 
 
