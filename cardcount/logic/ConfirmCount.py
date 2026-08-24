@@ -2,7 +2,7 @@ from __future__ import annotations
 from collections import Counter
 
 class StreakGate:
-    def __init__(self, frames: int = 3) -> None:
+    def __init__(self, frames: int = 12) -> None:
         self.frames = frames
         self._counts: Counter = Counter()
         self._streak: Counter = Counter()

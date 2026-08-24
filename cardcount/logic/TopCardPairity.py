@@ -25,20 +25,18 @@ def collapseTop(detections: list[Detection]) -> ParTopCard:
     #mark cards with a dual apperence
     canidates = []
     for label, group in byLabel.items():
-        if len(group >= 2):
+        if len(group) >= 2:
             canidates.append(label)
 
-    if canidates == 0:
-        return ParTopCard([], None, False, False) 
+    if not canidates == 0:
+        return ParTopCard(list(detections), None, False, False)
 
     #implement an ambig case baised on model confidence to tiebreak a top card when the and presents a multi card ocuuence
-    ambig = len(canidates)
-    if ambig > 1:
-        topConf = max(canidates, key= lambda label: byLabel[label][0].confidence)
-
+    ambig = len(canidates) > 1
+    topConf = max(canidates, key=lambda label: byLabel[label][0].confidence)
    #complete the subtraction of duplicate label
     cards: list [Detection] =[]
-    for label in byLabel.items():
+    for label, group in byLabel.items():
         if label == topConf:
             keep = len(group) - 1
         else:
