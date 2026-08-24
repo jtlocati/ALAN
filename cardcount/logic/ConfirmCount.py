@@ -20,7 +20,7 @@ class StreakGate:
 
             if self._streak[key] < self.frames:
                 del self._counts[key]
-                del self._counts[key]
+                del self._streak[key]
                 del self._missing[key]
             elif self._missing[key] >= self._resetFrames:
                 del self._counts[key]
@@ -32,13 +32,10 @@ class StreakGate:
                 self._streak[key] +=1
             else:
                 self._counts[key] = n
-                self._counts[key] = 1
+                self._streak[key] = 1
 
         return Counter({k: self._counts[k]for k, s in self._streak.items() if s >= self.frames})
 
     #keys seen in frame but not confirmed
     def pending(self, observed: Counter) -> Counter:
         return Counter({k: n for k, n in observed.items() if self._streak.get(k, 0) < self.frames})
-
-
-    

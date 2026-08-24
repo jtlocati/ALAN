@@ -6,11 +6,14 @@ BJ_COUNTS = {
     "7": +0, "8": +0, "9": +0,
     "10": -1, "J": -1, "Q": -1, "K": -1, "A": -1
 }
+SUITS = {"C", "D", "H", "S"}
 
 
 def rankCards(label: str) -> str:
     #clean labels to ignore suite
-    return label[:-1]
+    if label and label[-1] in SUITS:
+        return label[:-1]
+    return label
 
 def main(weights: str, data: str) -> None:
     model = YOLO(weights)

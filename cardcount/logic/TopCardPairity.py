@@ -1,6 +1,6 @@
 from __future__ import annotations
 from collections import defaultdict
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from cardcount.detections.detections import Detection
 
@@ -28,13 +28,13 @@ def collapseTop(detections: list[Detection]) -> ParTopCard:
         if len(group) >= 2:
             canidates.append(label)
 
-    if not canidates == 0:
+    if not canidates:
         return ParTopCard(list(detections), None, False, False)
 
     #implement an ambig case baised on model confidence to tiebreak a top card when the and presents a multi card ocuuence
     ambig = len(canidates) > 1
     topConf = max(canidates, key=lambda label: byLabel[label][0].confidence)
-   #complete the subtraction of duplicate label
+    #complete the subtraction of duplicate label
     cards: list [Detection] =[]
     for label, group in byLabel.items():
         if label == topConf:
@@ -48,6 +48,5 @@ def collapseTop(detections: list[Detection]) -> ParTopCard:
 def conf(detections: list[Detection]) -> list[Detection]:
     return collapseTop(detections).cards
 
-
-
-        
+def stripSuite(detections: list[Detection]) -> list[Detection]:
+    return [replace(d, label=d.label[:-1]) for d in detections]

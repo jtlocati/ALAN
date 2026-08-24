@@ -44,7 +44,7 @@ def main() -> None:
         print(f"{len(detections):2d} det | {len(present):2d} distinct | frame Hi-Lo {frame_count:+d} | {present}")
 
         draw(frame, detections, colour=(0, 225, 0))
-        cv2.putText(frame, f"cards: {len(present)} COUNT: {frame_count:+d}", (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.9, (0, 225, 255), 2)
+        cv2.putText(frame, f"CARDS: {present}", (10, 30), cv2.FONT_HERSHEY_COMPLEX, 0.9, (0, 225, 255), 2)
         cv2.imshow(f"ALAN CARDS", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):
