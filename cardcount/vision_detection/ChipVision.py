@@ -38,7 +38,7 @@ def main():
         print(f"{dict(counts)}  >= ${total}")
 
         draw(frame, detect, colour=(255, 200, 0))
-        cv2.putText(frame, f">= ${total}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
+        cv2.putText(frame, f">= ${total}, ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
         cv2.imshow("ALAN - chips", frame)
 
         if cv2.waitKey(1) & 0xFF == ord("q"):

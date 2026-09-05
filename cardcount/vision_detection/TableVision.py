@@ -27,7 +27,7 @@ def NormaliseChip(raw: str) -> str:
 
 DENOMINATIONS = {"white": 1, "red": 5, "blue": 10, "green": 25, "black": 100}
 
-def main() -> None:
+def main():
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
     print(f"cards: {len(cardModel.names)} classes | chips: {len(chipModel.names)} classes")
