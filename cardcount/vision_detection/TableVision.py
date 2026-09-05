@@ -9,6 +9,7 @@ from cardcount.vision.table import analizeFrames
 from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
+from dataclasses import dataclass
 
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
@@ -21,11 +22,82 @@ CARD_CONF = 0.25
 CHIP_CONF = 0.50
 CONF_FRAMES = 4
 
+@dataclass(frozen=True, slots=True)
+class TableReading:
+    PlayerCards: list[str]
+    DealerCards: list[str]
+    runningCount: int
+    potTotal: int
+    chipColors: list[str]
+
+
 def NormaliseChip(raw: str) -> str:
     return raw.strip().lower().replace(" chip", "")
 
 
 DENOMINATIONS = {"white": 1, "red": 5, "blue": 10, "green": 25, "black": 100}
+
+def readTable(view, gate) -> TableReading:
+    observed = Counter()
+    #find cards per person + the count it holds
+    for detection in view.dealer:
+        dealerKey = ("dealer", detection.label)
+        #Recall the given card @ location [key] include an additional +1 trakcer per carrd instance 
+        observed[dealerKey] = observed[dealerKey] + 1
+
+    for detection in view.player:
+        playerKey = ("player", detection.label)
+        observed[playerKey] = observed[playerKey] +1
+
+    confirmedCards = gate.update(observed)
+
+    dealer_cards = []
+    player_cards = []
+
+    for roleLabel, cardCount in confirmedCards.items():
+        role = roleLabel[0]
+        card = roleLabel[1]
+
+        for _ in range(cardCount): 
+            if role == "dealer":
+                dealer_cards.append(card)
+            else:
+                player_cards.append(card)
+
+    dealer_cards.sort()
+    player_cards.sort()
+
+    #find count
+    runnning_count = 0
+
+    for card in dealer_cards:
+        dealerRank = rankCards(card)
+        runnning_count = runnning_count + BJ_COUNTS.get(dealerRank, 0)
+
+    for label in dealer_cards:
+        playerRank = rankCards(card)
+        runnning_count = runnning_count + BJ_COUNTS(playerRank, 0)
+
+
+    #find pot
+    potTotal = 0
+    chipColors = []
+
+
+    for detection in view.pot:
+        color = NormaliseChip(detection.label)
+        chipColors.append(color)
+
+        potTotal = potTotal + DENOMINATIONS.get(color,0)
+
+    return TableReading(
+        DealerCards=dealer_cards,
+        PlayerCards=player_cards,
+        runningCount=runnning_count,
+        potTotal=potTotal,
+        chipColors=chipColors
+    )
+
 
 def main():
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
@@ -91,6 +163,8 @@ def main():
     finally:
         cam.release()
         cv2.destroyAllWindows()
+
+    return dealerCards, playerCards
 
 
 if __name__ == "__main__":
