@@ -10,14 +10,15 @@ from django.views.decorators.http import require_POST
 
 from cardcount.detections.detectors import Detector
 from cardcount.logic.ConfirmCount import StreakGate
-from cardcount.metrics.eval import BJ_COUNTS, rankCar
-from cardcount.vision_detection.ChipVision import CHIP_NAMES, DENOMINATIONS
+from cardcount.metrics.eval import BJ_COUNTS
+from cardcount.vision_detection.ChipVision import CHIP_NAMES
 from cardcount.vision.table import analizeFrames
 from collections import Counter
+from cardcount.metrics.eval import BJ_COUNTS, rankCards
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CARD_WEIGHTS = BASE_DIR / "models" / "cards_best.pt"
-CHIP_WEIGHTS = BASE_DIR / "models" / "cards_best.pt"
+CHIP_WEIGHTS = BASE_DIR / "models" / "chips_best.pt"
 
 IMGSZ = 640
 DEVICE = "cpu"
@@ -26,6 +27,8 @@ CHIP_CONF = 0.5
 
 #consecutive framse needed for a hand to be current
 CONF_FRAMES = 6
+
+DENOMINATIONS = {"white": 1, "red": 5, "blue": 10, "green": 25, "black": 100}
 
 
 #initalze models as program starts up
@@ -45,6 +48,8 @@ def index(request):
 
 
 #render and return the page analysis pror to display to prevent redudnet analysis at runtime
+@csrf_exempt
+@require_POST
 def analize(request):
     raw = request.body
     if len(raw) == 0:
@@ -88,10 +93,10 @@ def analize(request):
     #count total card count
     running_count = 0
     for label in dealer_cards:
-        running_count += BJ_COUNTS.get(rankCar(label), 0)
+        running_count += BJ_COUNTS.get(rankCards(label), 0)
 
     for label in player_cards:
-        running_count += BJ_COUNTS.get(rankCar(label), 0)
+        running_count += BJ_COUNTS.get(rankCards(label), 0)
 
     #find total in pot
     pot = 0
@@ -99,7 +104,7 @@ def analize(request):
     for detection in view.pot:
         color = NormaliseChip(detection.label)
         chip_colors.append(color)
-        pot += DENOMINATIONS.get(color)
+        pot += DENOMINATIONS.get(color, 0)
 
     #initalize boxes for display
     boxes = []
@@ -119,7 +124,7 @@ def analize(request):
         "player": player_cards,
         "hilo": running_count,
         "pot": pot,
-        "chips": color,
+        "chips": chip_colors,
         "boxes": boxes,
     }
 

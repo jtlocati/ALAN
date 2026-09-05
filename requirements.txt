@@ -1,9 +1,9 @@
-opencv-python-headless>=4.9.0,<5
-django>=5.0
-gunicorn>=22.0
-whitenoise>=6.6
-django>=5.0
-gunicorn>=22.0
-whitenoise>=6.6
 torch>=2.0
 torchvision>=0.15
+ultralytics>=8.3.0
+numpy>=1.26.0
+scipy>=1.13.0
+
+django>=5.0
+gunicorn>=22.0
+whitenoise>=6.6

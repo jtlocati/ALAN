@@ -4,13 +4,13 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 #integrate key
-SECRET_SHHH =  os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key")
+SECRET_KEY =  os.environ.get("DJANGO_SECRET_KEY", "dev-only-insecure-key")
 
-DEBUG = False
+DEBUG = os.environ.get("DJANGO_DEBUG", "false").lower() == "true"
 
 ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
-RENDER_HOSTNAME = os.environ.get("RENDER_EXTERNAL_KEY")
+RENDER_HOSTNAME  = os.environ.get("RENDER_EXTERNAL_KEY")
 
 if RENDER_HOSTNAME is not None:
     ALLOWED_HOSTS.append(RENDER_HOSTNAME)
@@ -28,7 +28,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "alan_web.urls"
 
-TMEPLATES = [
+TEMPLATES  = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "DIRS": [],
