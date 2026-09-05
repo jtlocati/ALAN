@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>ALAN table</title>
+        <style>
+            body { margin: 0; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+            #wrap { position: relative; display: inline-block; }
+            video, canvas { display: block; }
+            canvas { position: absolute; left: 0; top: 0; }
+            #status { padding: 8px 12px; font-size: 15px; }
+        </style>
+    </head>
+    <body>
+        <div id="status">starting</div>
+<div id="wrap">
+  <video id="cam" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
+</div>
+
+<script>
+        const video = document.getElementById("cam");
+        const overlay = document.getElementById("overlay");
+        const overlayContext = overlay.getContext("2d");
+        const statusLine = document.getElementById("status");
+        const uploadCanvas = document.createElement("canvas");
+        const uploadContext = uploadCanvas.getContext("2d");
+
+        const SEND_WIDTH = 960;
+        const ROLE_COLOURS = {
+        dealer: "#00e100",
+        player: "#00e100",
+        pot: "#00c8ff",
+        unassigned: "#ff8c00"
+        };
+
+        let busy = false;
+
+        async function start() {
+        const stream = await navigator.mediaDevices.getUserMedia({
+            video: { width: { ideal: 1280 }, height: { ideal: 720 } },
+            audio: false
+        });
+        video.srcObject = stream;
+        await video.play();
+
+        overlay.width = video.videoWidth;
+        overlay.height = video.videoHeight;
+
+        const scale = SEND_WIDTH / video.videoWidth;
+        uploadCanvas.width = SEND_WIDTH;
+        uploadCanvas.height = Math.round(video.videoHeight * scale);
+
+        statusLine.textContent = "running";
+        loop();
+        }
+        async function loop() {
+  // A single in flight request at a time. Without this guard a slow server
+  // response would queue frames faster than they complete and latency would
+  // grow without bound, which is the same failure the threaded grabber solves
+  // on the desktop side.
+  if (!busy) {
+    busy = true;
+    try {
+      await sendFrame();
+    } catch (error) {
+      statusLine.textContent = "error: " + error;
+    }
+    busy = false;
+  }
+  requestAnimationFrame(loop);
+}
+
+    async function sendFrame() {
+    uploadContext.drawImage(video, 0, 0, uploadCanvas.width, uploadCanvas.height);
+
+    const blob = await new Promise(function (resolve) {
+        uploadCanvas.toBlob(resolve, "image/jpeg", 0.7);
+    });
+
+    const response = await fetch("/api/frame", { method: "POST", body: blob });
+    if (!response.ok) {
+        statusLine.textContent = "server " + response.status;
+        return;
+    }
+
+    const result = await response.json();
+    draw(result);
+    }
+
+    function draw(result) {
+    // The server saw a downscaled frame. Scale its boxes back up to the size the
+    // video element is actually rendering at.
+    const scaleX = overlay.width / result.width;
+    const scaleY = overlay.height / result.height;
+
+    overlayContext.clearRect(0, 0, overlay.width, overlay.height);
+    overlayContext.lineWidth = 2;
+    overlayContext.font = "14px system-ui";
+
+    for (const item of result.boxes) {
+        const colour = ROLE_COLOURS[item.role] || "#ffffff";
+        const x1 = item.box[0] * scaleX;
+        const y1 = item.box[1] * scaleY;
+        const x2 = item.box[2] * scaleX;
+        const y2 = item.box[3] * scaleY;
+
+        overlayContext.strokeStyle = colour;
+        overlayContext.strokeRect(x1, y1, x2 - x1, y2 - y1);
+        overlayContext.fillStyle = colour;
+        overlayContext.fillText(item.label, x1, Math.max(12, y1 - 4));
+    }
+
+    statusLine.textContent =
+        "D " + JSON.stringify(result.dealer) +
+        "  P " + JSON.stringify(result.player) +
+        "  hi-lo " + result.hilo +
+        "  pot >= $" + result.pot;
+    }
+
+    start();
+    </script>
+    </body>
+</html>
