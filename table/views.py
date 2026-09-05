@@ -68,4 +68,18 @@ def analize(request):
 
     confirmed_cards = CONFIRM_HAND.update(Counter(observed))
 
-    
+    dealer_cards = []
+    player_cards = []
+
+    for role, count in confirmed_cards.items():
+        rolee = role[0]
+        label = role[1]
+        for _ in range (count):
+            if role == "dealer":
+                dealer_cards.append(label)
+            else:
+                player_cards.append(label)
+
+    dealer_cards.sort()
+    player_cards.sort()
+
