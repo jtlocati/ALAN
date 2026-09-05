@@ -121,28 +121,14 @@ def main():
 
             view = analizeFrames(frame, cardModel, chipModel, CARD_CONF, CHIP_CONF)
 
-            observed = Counter()
-            for d in view.dealer:
-                observed[("dealer", d.label)] += 1
-            for d in view.player:
-                observed[("player", d.label)] += 1
-
-            confirmed = gate.update(observed)
-
-            dealerCards = sorted(lbl for (role, lbl), n in confirmed.items() for _ in range(n) if role == "dealer")
-            playerCards = sorted(lbl for (role, lbl), n in confirmed.items() for _ in range(n) if role == "player")
-
-            dealerCount = sum(BJ_COUNTS.get(rankCards(l), 0) for l in dealerCards)
-            playerCount = sum(BJ_COUNTS.get(rankCards(l), 0) for l in playerCards)
-
-            potTotal = sum(DENOMINATIONS.get(NormaliseChip(d.label), 0) for d in view.pot)
-
+            reading = readTable(view, gate)
+            
             if view.unassigned:
                 print(f"  !! cards in the betting band: "
                       f"{[d.label for d in view.unassigned]}")
 
-            print(f"D {dealerCards} | P {playerCards} | "
-                  f"pot >= ${potTotal} | hi-lo {dealerCount + playerCount:+d}")
+            print(f"D {reading.DealerCards} | P {reading.PlayerCards} | "
+                  f"pot >= ${reading.potTotal} | hi-lo {reading.runningCount:+d}")
 
             if showBands:
                 drawBands(frame)
@@ -152,7 +138,7 @@ def main():
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${potTotal} DEALER HAND {dealerCards} | PLAYER HAND {playerCards} ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal} DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards} ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
@@ -163,8 +149,6 @@ def main():
     finally:
         cam.release()
         cv2.destroyAllWindows()
-
-    return dealerCards, playerCards
 
 
 if __name__ == "__main__":
