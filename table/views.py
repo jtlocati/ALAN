@@ -93,5 +93,12 @@ def analize(request):
     for label in player_cards:
         running_count += BJ_COUNTS.get(rankCar(label), 0)
 
+    #find total in pot
     pot = 0
-    
+    chip_colors = []
+    for detection in view.pot:
+        color = NormaliseChip(detection.label)
+        chip_colors.append(color)
+        pot += DENOMINATIONS.get(color)
+
+
