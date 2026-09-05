@@ -101,4 +101,27 @@ def analize(request):
         chip_colors.append(color)
         pot += DENOMINATIONS.get(color)
 
+    #initalize boxes for display
+    boxes = []
+    for role, detections in (("dealer", view.dealer), ("player", view.player), ("pot", view.pot), ("unassigned", view.unassigned)):
+        for detection in detections:
+            boxes.append({
+                "role": role,
+                "label": detection.label,
+                "conf": round(detection.confidence, 3),
+                "box": [round(value, 1) for value in detection.box],
+            })
+
+    BoxPayload = {
+        "width": int(frame.shape[1]),
+        "height": int(frame.shape[0]),
+        "dealer": dealer_cards,
+        "player": player_cards,
+        "hilo": running_count,
+        "pot": pot,
+        "chips": color,
+        "boxes": boxes,
+    }
+
+    return JsonResponse(BoxPayload)
 
