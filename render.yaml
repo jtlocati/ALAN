@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: alan
+    runtime: python
+    plan: standard
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn alan_web.wsgi:application --workers 1 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
