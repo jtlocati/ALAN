@@ -57,6 +57,7 @@ def analize(request):
 
     view = analizeFrames(frame, CARD_MODEL, CHIP_MODEL, CARD_CONF, CHIP_CONF)
 
+    #validate cards
     observed = {}
 
     for detection in view.dealer:
@@ -68,6 +69,7 @@ def analize(request):
 
     confirmed_cards = CONFIRM_HAND.update(Counter(observed))
 
+    #split cards from the total list to the player and dealer hands 
     dealer_cards = []
     player_cards = []
 
@@ -75,7 +77,7 @@ def analize(request):
         rolee = role[0]
         label = role[1]
         for _ in range (count):
-            if role == "dealer":
+            if rolee == "dealer":
                 dealer_cards.append(label)
             else:
                 player_cards.append(label)
@@ -83,3 +85,13 @@ def analize(request):
     dealer_cards.sort()
     player_cards.sort()
 
+    #count total card count
+    running_count = 0
+    for label in dealer_cards:
+        running_count += BJ_COUNTS.get(rankCar(label), 0)
+
+    for label in player_cards:
+        running_count += BJ_COUNTS.get(rankCar(label), 0)
+
+    pot = 0
+    
