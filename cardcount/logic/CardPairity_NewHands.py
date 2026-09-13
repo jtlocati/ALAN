@@ -3,7 +3,7 @@
 
 def IsPlaying(dealerCards, Playercards) -> str:
     if (len(dealerCards) > 1 and len(Playercards)> 1):
-        return "HAND IN PROGRESS"
+        return "ROUND IN PROGRESS"
     if (len(dealerCards) == 1 or len(Playercards) == 1):
         return "CARDS BEING DELT"
     if (len(dealerCards) == 0 or len(Playercards) == 0):
