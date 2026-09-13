@@ -11,10 +11,10 @@ def IsPlaying(dealerCards, Playercards) -> str:
 
     return "UNDEFINED"
 
-def HandVaule(DealerCards, PlayerCards):
+def HandVaule(PlayStatus, DealerCards, PlayerCards):
     PlayerHandValue = [0,0]
     DealerHandValue = [0,0]
-    while (IsPlaying(DealerCards, PlayerCards)):
+    while (PlayStatus=="ROUND IN PROGRESS"):
         for i in DealerCards:
             try:
                 DealerCards[0] = DealerHandValue[0] + int(i)
