@@ -35,7 +35,6 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
                 if i == "A":
                     PlayerAces = PlayerAces + 1
                     PlayerHandValue[0] = PlayerHandValue[0] + 1
-                    Status = "SOFT"
                 else:
                     PlayerHandValue[0] = PlayerHandValue[0] + 10
 
@@ -46,7 +45,8 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
         PlayerHandValue[1] = PlayerHandValue[0]
         if (PlayerAces > 0 and (PlayerHandValue[0] + 10) <= 21):
             PlayerHandValue[1] = PlayerHandValue[0] + 10
+            Status = "SOFT"
 
 
 
-    return PlayerHandValue, DealerHandValue, Status
+    return PlayerHandValue, DealerHandValue, Status, DealerAces

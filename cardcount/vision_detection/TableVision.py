@@ -11,6 +11,8 @@ from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
 from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule
+from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm
+
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt"
@@ -123,8 +125,9 @@ def main():
 
             handProgress = IsPlaying(reading.DealerCards, reading.PlayerCards)
 
-            PlayerHandValue, DealerHandValue, HandType = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
-            
+            PlayerHandValue, DealerHandValue, HandType, Dealer_ace = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
+
+            LikleyMove_NORM = FindLikleyMoveNorm(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
             
             if view.unassigned:
                 print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
@@ -139,9 +142,9 @@ def main():
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${reading.potTotal}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD: {LikleyMove_NORM}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(frame, f"TableStatus = {handProgress}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 255, 255), 2)
             cv2.imshow("ALAN - table", frame)
 
