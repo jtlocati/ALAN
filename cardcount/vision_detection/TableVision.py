@@ -10,7 +10,7 @@ from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
-
+from cardcount.logic.CardPairity_NewHands import IsPlaying
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt"
@@ -26,7 +26,6 @@ CONF_FRAMES = 4
 class TableReading:
     PlayerCards: list[str]
     DealerCards: list[str]
-    runningCount: int
     potTotal: int
     chipColors: list[str]
 
@@ -68,7 +67,7 @@ def readTable(view, gate) -> TableReading:
     player_cards.sort()
 
     #find count
-    runnning_count = 0
+    """runnning_count = 0
 
     for card in dealer_cards:
         dealerRank = rankCards(card)
@@ -76,7 +75,7 @@ def readTable(view, gate) -> TableReading:
 
     for label in dealer_cards:
         playerRank = rankCards(card)
-        runnning_count = runnning_count + BJ_COUNTS(playerRank, 0)
+        runnning_count = runnning_count + BJ_COUNTS(playerRank, 0)"""
 
 
     #find pot
@@ -93,7 +92,6 @@ def readTable(view, gate) -> TableReading:
     return TableReading(
         DealerCards=dealer_cards,
         PlayerCards=player_cards,
-        runningCount=runnning_count,
         potTotal=potTotal,
         chipColors=chipColors
     )
@@ -122,12 +120,14 @@ def main():
             view = analizeFrames(frame, cardModel, chipModel, CARD_CONF, CHIP_CONF)
 
             reading = readTable(view, gate)
+
+            handProgress = IsPlaying(reading.DealerCards, reading.PlayerCards)
             
             
             if view.unassigned:
                 print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
 
-            print(f"D {reading.DealerCards} | P {reading.PlayerCards} | pot >= ${reading.potTotal} | hi-lo {reading.runningCount:+d}")
+            print(f"D {reading.DealerCards} | P {reading.PlayerCards} | pot >= ${reading.potTotal}")
 
             if showBands:
                 drawBands(frame)
@@ -137,7 +137,9 @@ def main():
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${reading.potTotal} DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards} ", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"TableStatus = {handProgress}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
