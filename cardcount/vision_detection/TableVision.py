@@ -123,12 +123,11 @@ def main():
 
             reading = readTable(view, gate)
             
+            
             if view.unassigned:
-                print(f"  !! cards in the betting band: "
-                      f"{[d.label for d in view.unassigned]}")
+                print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
 
-            print(f"D {reading.DealerCards} | P {reading.PlayerCards} | "
-                  f"pot >= ${reading.potTotal} | hi-lo {reading.runningCount:+d}")
+            print(f"D {reading.DealerCards} | P {reading.PlayerCards} | pot >= ${reading.potTotal} | hi-lo {reading.runningCount:+d}")
 
             if showBands:
                 drawBands(frame)
