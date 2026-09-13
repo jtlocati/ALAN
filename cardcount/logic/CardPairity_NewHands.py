@@ -14,32 +14,35 @@ def IsPlaying(dealerCards, Playercards) -> str:
 def HandVaule(PlayStatus, DealerCards, PlayerCards):
     PlayerHandValue = [0,0]
     DealerHandValue = [0,0]
-    while (PlayStatus=="ROUND IN PROGRESS"):
+    DealerAces = 0
+    PlayerAces = 0
+
+    if (PlayStatus == "ROUND IN PROGRESS" or PlayStatus == "CARDS BEING DELT"):
         for i in DealerCards:
             try:
-                DealerCards[0] = DealerHandValue[0] + int(i)
+                DealerHandValue[0] = DealerHandValue[0] + int(i)
             except ValueError:
                 if i == "A":
-                    if (DealerHandValue + 11 ) > 21:
-                        DealerHandValue[0] = DealerHandValue[0] + 1
-                    else:
-                        DealerHandValue[0] = DealerHandValue[0] + 1
-                        DealerHandValue[1] = DealerHandValue[1] + 11
+                    DealerAces = DealerAces + 1
+                    DealerHandValue[0] = DealerHandValue[0] + 1
                 else:
                     DealerHandValue[0] = DealerHandValue[0] + 10
         for i in PlayerCards:
             try:
-                PlayerCards[0] = PlayerHandValue[0] + int(i)
+                PlayerHandValue[0] = PlayerHandValue[0] + int(i)
             except ValueError:
                 if i == "A":
-                    if (PlayerHandValue + 11 ) > 21:
-                        PlayerHandValue[0] = PlayerHandValue[0] + 1
-                    else:
-                        PlayerHandValue[0] = PlayerHandValue[0] + 1
-                        PlayerHandValue[1] = PlayerHandValue[1] + 11
+                    PlayerAces = PlayerAces + 1
+                    PlayerHandValue[0] = PlayerHandValue[0] + 1
                 else:
                     PlayerHandValue[0] = PlayerHandValue[0] + 10
+
+        DealerHandValue[1] = DealerHandValue[0]
+        if (DealerAces > 0 and (DealerHandValue[0] + 10) <= 21):
+            DealerHandValue[1] = DealerHandValue[0] + 10
+
+        PlayerHandValue[1] = PlayerHandValue[0]
+        if (PlayerAces > 0 and (PlayerHandValue[0] + 10) <= 21):
+            PlayerHandValue[1] = PlayerHandValue[0] + 10
+
     return PlayerHandValue, DealerHandValue
-
-
-

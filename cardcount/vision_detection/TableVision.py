@@ -141,7 +141,8 @@ def main():
 
             cv2.putText(frame, f"pot >= ${reading.potTotal}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
             cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(frame, f"TableStatus = {handProgress} | Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"TableStatus = {handProgress}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 255, 255), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
