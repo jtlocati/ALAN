@@ -16,6 +16,7 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
     DealerHandValue = [0,0]
     DealerAces = 0
     PlayerAces = 0
+    Status = "HARD"
 
     if (PlayStatus == "ROUND IN PROGRESS" or PlayStatus == "CARDS BEING DELT"):
         for i in DealerCards:
@@ -34,6 +35,7 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
                 if i == "A":
                     PlayerAces = PlayerAces + 1
                     PlayerHandValue[0] = PlayerHandValue[0] + 1
+                    Status = "SOFT"
                 else:
                     PlayerHandValue[0] = PlayerHandValue[0] + 10
 
@@ -45,4 +47,6 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
         if (PlayerAces > 0 and (PlayerHandValue[0] + 10) <= 21):
             PlayerHandValue[1] = PlayerHandValue[0] + 10
 
-    return PlayerHandValue, DealerHandValue
+
+
+    return PlayerHandValue, DealerHandValue, Status

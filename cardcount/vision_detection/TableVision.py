@@ -123,7 +123,7 @@ def main():
 
             handProgress = IsPlaying(reading.DealerCards, reading.PlayerCards)
 
-            PlayerHandValue, DealerHandValue = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
+            PlayerHandValue, DealerHandValue, HandType = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
             
             
             if view.unassigned:
