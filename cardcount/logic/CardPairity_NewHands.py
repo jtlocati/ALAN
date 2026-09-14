@@ -2,7 +2,7 @@
 
 
 def IsPlaying(dealerCards, Playercards) -> str:
-    if (len(dealerCards) > 1 and len(Playercards)> 1):
+    if (len(dealerCards) >= 1 and len(Playercards)> 1):
         return "ROUND IN PROGRESS"
     if (len(dealerCards) == 1 or len(Playercards) == 1):
         return "CARDS BEING DELT"
@@ -81,5 +81,6 @@ def WhoWinner(DealerValue, PlayerValue, HandProgress) -> str:
         return "PLAYER"
     if (DealerBest > PlayerBest):
         return "DEALER"
-
-    return "PUSH"
+    if (DealerBest == PlayerBest):
+        return "PUSH"
+    return "NON-RES"
