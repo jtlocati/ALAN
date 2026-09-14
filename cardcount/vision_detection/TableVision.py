@@ -104,6 +104,8 @@ def readTable(view, gate) -> TableReading:
 def main():
     COUNT = 0
     RemoveCards = False
+    CLEAR_FRAMES= 0
+    EmptyFrames = 0
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
     print(f"cards: {len(cardModel.names)} classes | chips: {len(chipModel.names)} classes")
@@ -136,11 +138,19 @@ def main():
             LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
 
             #Put most rencent hand value into the count card function.
-            if GameProgression != "NON-RES" and handProgress == "ROUND IN PROGRESS":
+            if GameProgression == "TABLE CLEAR":
+                EmptyFrames = EmptyFrames + 1
+            else:
+                EmptyFrames = 0
+
+            if EmptyFrames > CLEAR_FRAMES:
+                RemoveCards = False
+
+            if (RemoveCards == False and GameProgression != "NON-RES" and handProgress == "ROUND IN PROGRESS"):
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
-                COUNT = COUNT +  Count
+                COUNT = COUNT + Count
                 RemoveCards = True
-                time.sleep(1)
+
 
 
             
