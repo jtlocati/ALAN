@@ -104,7 +104,7 @@ def readTable(view, gate) -> TableReading:
 def main():
     COUNT = 0
     RemoveCards = False
-    CLEAR_FRAMES= 0
+    CLEAR_FRAMES= 10
     EmptyFrames = 0
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)

@@ -8,6 +8,9 @@ def IsPlaying(dealerCards, Playercards) -> str:
         return "CARDS BEING DELT"
     if (len(dealerCards) == 0 or len(Playercards) == 0):
         return "ROUND OVER"
+    if (len(dealerCards) == 0 and len(Playercards) == 0):
+        return "TABLE CLEAR"
+
 
     return "UNDEFINED"
 
