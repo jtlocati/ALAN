@@ -12,7 +12,7 @@ def FindLikleyMoveNorm(RoundProgression, DealerHandValue, PlayeHandValue, HandTy
             if ((PlayeHandValue[0] == 12) and ( 4 <= DealerHandValue[0] <= 6)):
                 return "HIT"
 
-            if ((13<= PlayeHandValue[0] <=16 ) and not (2<= DealerHandValue <=6)):
+            if ((13<= PlayeHandValue[0] <=16 ) and not (2<= DealerHandValue[1] <=6)):
                 return "HIT"
 
             if (PlayeHandValue[0] >= 17):
@@ -25,7 +25,12 @@ def FindLikleyMoveNorm(RoundProgression, DealerHandValue, PlayeHandValue, HandTy
             return "HIT"
 
         return "STAND"
-    
+
+
+def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, HandType, D_ace) -> str:
+    if DealerHandValue[0] + 10 > PlayeHandValue[0] or DealerHandValue[1] + 10 > PlayeHandValue[1]:
+        return "HIT"
+    return "STAND"
 
 
 
