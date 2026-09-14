@@ -10,8 +10,8 @@ from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
-from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule
-from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm
+from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner
+from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE
 
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
@@ -22,7 +22,7 @@ IMGSZ = 640
 DEVICE = "cpu"
 CARD_CONF = 0.25
 CHIP_CONF = 0.50
-CONF_FRAMES = 4
+CONF_FRAMES = 20
 
 @dataclass(frozen=True, slots=True)
 class TableReading:
@@ -127,7 +127,16 @@ def main():
 
             PlayerHandValue, DealerHandValue, HandType, Dealer_ace = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
 
-            LikleyMove_NORM = FindLikleyMoveNorm(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
+            GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress)
+
+            LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
+
+            #Put most rencent hand value into the count card function.
+            if GameProgression != "NON-RES":
+                #feed UserCards and PalyerCards into the count function at this time
+                Filler = "none"
+
+
             
             if view.unassigned:
                 print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
@@ -142,10 +151,11 @@ def main():
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD: {LikleyMove_NORM}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2)
-            cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 255, 255), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD: {LikleyMove_NORM}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0), 2)
+            cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"Winner: {GameProgression}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
