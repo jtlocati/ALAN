@@ -2,9 +2,10 @@
 
 def HandCount(CardPlayer, CardDealer):
     COUNT = 0
+    CARDS = CardPlayer + CardDealer
 
     #Calculate players weight first
-    for i in CardPlayer:
+    for i in CARDS:
         try:
             Value = int(i)
 
