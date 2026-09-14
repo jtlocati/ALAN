@@ -50,3 +50,36 @@ def HandVaule(PlayStatus, DealerCards, PlayerCards):
 
 
     return PlayerHandValue, DealerHandValue, Status, DealerAces
+
+
+#in determineing the winner we are assuming that the dealer must stand on a soft 17
+def DealerMustHit(DealerValue, Dealer_ace) -> bool:
+    if (DealerValue[0] > 21):
+        return False
+
+    Best = DealerValue[1]
+
+    if (Best < 17):
+        return True
+
+    if (Best == 17 and Dealer_ace == "SOFT"):
+        return True
+
+    return False
+
+
+def WhoWinner(DealerValue, PlayerValue, HandProgress) -> str:
+    if (PlayerValue[0] > 21):
+        return "DEALER"
+    if (DealerValue[0] > 21):
+        return "PLAYER"
+
+    PlayerBest = PlayerValue[1]
+    DealerBest = DealerValue[1]
+
+    if (PlayerBest > DealerBest):
+        return "PLAYER"
+    if (DealerBest > PlayerBest):
+        return "DEALER"
+
+    return "PUSH"
