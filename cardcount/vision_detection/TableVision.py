@@ -1,6 +1,6 @@
 from pathlib import Path
-
 import cv2
+import time
 
 from cardcount.detections.detectors import Detector
 from cardcount.metrics.eval import BJ_COUNTS, rankCards
@@ -12,7 +12,7 @@ from collections import Counter
 from dataclasses import dataclass
 from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner
 from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE
-
+from cardcount.logic.CountTheCards import HandCount
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt"
@@ -23,6 +23,8 @@ DEVICE = "cpu"
 CARD_CONF = 0.25
 CHIP_CONF = 0.50
 CONF_FRAMES = 20
+
+
 
 @dataclass(frozen=True, slots=True)
 class TableReading:
@@ -100,6 +102,7 @@ def readTable(view, gate) -> TableReading:
 
 
 def main():
+    COUNT = 0
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
     print(f"cards: {len(cardModel.names)} classes | chips: {len(chipModel.names)} classes")
@@ -127,14 +130,15 @@ def main():
 
             PlayerHandValue, DealerHandValue, HandType, Dealer_ace = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
 
-            GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress)
+            GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress, Dealer_ace)
 
             LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
 
             #Put most rencent hand value into the count card function.
             if GameProgression != "NON-RES":
-                #feed UserCards and PalyerCards into the count function at this time
-                Filler = "none"
+                Count = HandCount(reading.PlayerCards, reading.DealerCards)
+                COUNT = COUNT +  Count
+                time.sleep(1)
 
 
             
@@ -156,6 +160,7 @@ def main():
             cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0), 2)
             cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Winner: {GameProgression}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"Count: {COUNT}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF

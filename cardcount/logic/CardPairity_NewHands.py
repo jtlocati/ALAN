@@ -68,11 +68,20 @@ def DealerMustHit(DealerValue, Dealer_ace) -> bool:
     return False
 
 
-def WhoWinner(DealerValue, PlayerValue, HandProgress) -> str:
+def WhoWinner(DealerValue, PlayerValue, HandProgress, Dealer_ace) -> str:
+    # Busts resolve the instant they happen, whatever the round status.
     if (PlayerValue[0] > 21):
         return "DEALER"
     if (DealerValue[0] > 21):
         return "PLAYER"
+
+    # Table is empty or unreadable. Nothing to judge.
+    if (HandProgress != "ROUND IN PROGRESS"):
+        return "NON-RES"
+
+    # Revealed, but still drawing. Comparing now would judge a half hand.
+    if (DealerMustHit(DealerValue, Dealer_ace)):
+        return "NON-RES"
 
     PlayerBest = PlayerValue[1]
     DealerBest = DealerValue[1]
@@ -81,6 +90,5 @@ def WhoWinner(DealerValue, PlayerValue, HandProgress) -> str:
         return "PLAYER"
     if (DealerBest > PlayerBest):
         return "DEALER"
-    if (DealerBest == PlayerBest):
-        return "PUSH"
-    return "NON-RES"
+
+    return "PUSH"
