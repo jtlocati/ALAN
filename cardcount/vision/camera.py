@@ -6,6 +6,9 @@ import numpy
 from cardcount.detections.detections import Detection
 from cardcount.detections.detectors import Detector
 
+CONTRAST = 5
+
+
 class frameGrabbber:
     def __init__(self, source: int | str = 0, width: int = 1280, height: int = 720):
         backend = cv2.CAP_ANY
@@ -18,7 +21,8 @@ class frameGrabbber:
 
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc(*"MJPG"))
         self.cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+        self.cap.set(cv2.CAP_PROP_CONTRAST, 110)
+        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.45)
 
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -49,7 +53,7 @@ class frameGrabbber:
         self._thread.join(timeout=1.0)
         self.cap.release()
 
-def OpenCam(source: int | str = 0, width: int =1280, height: int=720) -> frameGrabbber:
+def OpenCam(source: int | str = 0, width: int =1280, height: int=930) -> frameGrabbber:
     return frameGrabbber(source, width, height)
 
 
