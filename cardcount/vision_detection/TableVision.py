@@ -117,6 +117,8 @@ def main():
     chipModel.warmup(cam.height, cam.width)
 
     showBands = True
+    Exposure = -5
+    Gain = 160
     gate = StreakGate(CONF_FRAMES)
 
     try:
@@ -180,6 +182,8 @@ def main():
                 break
             if key == ord("z"):
                 showBands = not showBands
+            """if key == ord("[]"):
+                Exposure"""
     finally:
         cam.release()
         cv2.destroyAllWindows()

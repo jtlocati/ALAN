@@ -6,15 +6,15 @@ import numpy
 from cardcount.detections.detections import Detection
 from cardcount.detections.detectors import Detector
 
-CAM_WIDTH= 1920
-CAM_HEIGHT = 1080
-CAM_EXPOSURE = -5
+CAM_WIDTH= 1620
+CAM_HEIGHT = 780
+#CAM_EXPOSURE = -2
 
 #brighten without blulr:
-CAM_GAIN=160
+#CAM_GAIN=95
 
-CAM_BRIGHTNESS = 150
-CAM_CONTRAST=140
+CAM_BRIGHTNESS = 75
+CAM_CONTRAST=110
 
 class frameGrabbber:
     def __init__(self, source: int | str = 0, width: int = 1280, height: int = 720):
@@ -40,7 +40,7 @@ class frameGrabbber:
         self.cap.set(cv2.CAP_PROP_EXPOSURE, 0.25)
 
         #breightness & stuff
-        self.cap.set(cv2.CAP_PROP_GAIN, CAM_GAIN)
+        #self.cap.set(cv2.CAP_PROP_GAIN, CAM_GAIN)
         self.cap.set(cv2.CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS)
         self.cap.set(cv2.CAP_PROP_CONTRAST, CAM_CONTRAST)
 
