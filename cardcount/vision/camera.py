@@ -6,6 +6,16 @@ import numpy
 from cardcount.detections.detections import Detection
 from cardcount.detections.detectors import Detector
 
+CAM_WIDTH= 1920
+CAM_HEIGHT = 1080
+CAM_EXPOSURE = -5
+
+#brighten without blulr:
+CAM_GAIN=160
+
+CAM_BRIGHTNESS = 150
+CAM_CONTRAST=140
+
 class frameGrabbber:
     def __init__(self, source: int | str = 0, width: int = 1280, height: int = 720):
         backend = cv2.CAP_ANY
@@ -16,9 +26,23 @@ class frameGrabbber:
         if not self.cap.isOpened():
             raise RuntimeError(f"COULD NOT OPEN CAMERA SOURCE @ {source}")
 
+        #save to MJPG before cropping + editing
         self.cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc(*"MJPG"))
+
+        #crp frame
+        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+        #toggle autofoucus to false
         self.cap.set(cv2.CAP_PROP_AUTOFOCUS, 0)
-        self.cap.set(cv2.CAP_PROP_AUTO_EXPOSURE, 0.25)
+
+        #toggle the manule exposure
+        self.cap.set(cv2.CAP_PROP_EXPOSURE, 0.25)
+
+        #breightness & stuff
+        self.cap.set(cv2.CAP_PROP_GAIN, CAM_GAIN)
+        self.cap.set(cv2.CAP_PROP_BRIGHTNESS, CAM_BRIGHTNESS)
+        self.cap.set(cv2.CAP_PROP_CONTRAST, CAM_CONTRAST)
 
         self.width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
@@ -49,7 +73,7 @@ class frameGrabbber:
         self._thread.join(timeout=1.0)
         self.cap.release()
 
-def OpenCam(source: int | str = 0, width: int =1280, height: int=720) -> frameGrabbber:
+def OpenCam(source: int | str = 0, width: int =CAM_WIDTH, height: int=CAM_HEIGHT) -> frameGrabbber:
     return frameGrabbber(source, width, height)
 
 
