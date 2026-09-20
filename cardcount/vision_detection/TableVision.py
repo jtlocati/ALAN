@@ -10,7 +10,7 @@ from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
-from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance
+from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance, playerHitStatus
 from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE
 from cardcount.logic.CountTheCards import HandCount
 
@@ -20,7 +20,7 @@ CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.
 CAM = 1
 IMGSZ = 640
 DEVICE = "cpu"
-CARD_CONF = 0.70
+CARD_CONF = 0.68
 CHIP_CONF = 0.30
 CONF_FRAMES = 22
 
@@ -146,6 +146,8 @@ def main():
 
             PotStatus = PotExsistance(reading.potTotal, handProgress)
 
+            PlayerHitStat = playerHitStatus(reading.PlayerCards)
+
             #Put most rencent hand value into the count card function.
             TableEmpty = (len(reading.PlayerCards) == 0 and len(reading.DealerCards) == 0)
             #open betting window
@@ -209,6 +211,7 @@ def main():
             cv2.putText(frame, f"Winner: {GameProgression}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Count: {COUNT}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.putText(frame, f"Pot Diff: {PotDiff}", (10,210), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
+            cv2.putText(frame, f"Player has hit {PlayerHitStat} times this round", (10,240), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
