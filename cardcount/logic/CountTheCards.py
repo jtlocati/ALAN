@@ -12,7 +12,7 @@ def HandCount(CardPlayer, CardDealer):
             if (2 <= Value <= 6):
                 COUNT+=1
             #eXPRESS STEP FOR READABILITY
-            elif (6 <= Value >= 7):
+            elif (7 <= Value <= 9):
                 COUNT += 0
             else:
                 COUNT -= 1

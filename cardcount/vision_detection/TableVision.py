@@ -10,7 +10,7 @@ from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
-from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner
+from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance
 from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE
 from cardcount.logic.CountTheCards import HandCount
 
@@ -106,6 +106,8 @@ def main():
     RemoveCards = False
     CLEAR_FRAMES= 10
     EmptyFrames = 0
+    POT_HISTORY = []
+    PotDiff = 0
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
     print(f"cards: {len(cardModel.names)} classes | chips: {len(chipModel.names)} classes")
@@ -137,8 +139,21 @@ def main():
 
             LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
 
+            PotStatus = PotExsistance(reading.potTotal, handProgress)
+
             #Put most rencent hand value into the count card function.
-            if GameProgression == "TABLE CLEAR":
+            TableEmpty = (len(reading.PlayerCards) == 0 and len(reading.DealerCards) == 0)
+
+            if (TableEmpty and PotStatus == "GAME POT"):
+                if len(POT_HISTORY) == 0:
+                    PotDiff = reading.potTotal
+                else:
+                    previous = POT_HISTORY[-1]
+
+                PotDiff = reading.potTotal - previous 
+                POT_HISTORY.append(reading.potTotal)
+
+            if TableEmpty:
                 EmptyFrames = EmptyFrames + 1
             else:
                 EmptyFrames = 0
@@ -150,6 +165,7 @@ def main():
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
                 COUNT = COUNT + Count
                 RemoveCards = True
+
 
 
 
@@ -173,6 +189,7 @@ def main():
             cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Winner: {GameProgression}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Count: {COUNT}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
+            cv2.putText(frame, f"Pot Diff: {PotDiff}", (10,210), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
