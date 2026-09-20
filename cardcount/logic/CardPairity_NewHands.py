@@ -6,21 +6,22 @@ def IsPlaying(dealerCards, Playercards) -> str:
         return "ROUND IN PROGRESS"
     if (len(dealerCards) == 1 or len(Playercards) == 1):
         return "CARDS BEING DELT"
-    if (len(dealerCards) == 0 or len(Playercards) == 0):
-        return "ROUND OVER"
     if (len(dealerCards) == 0 and len(Playercards) == 0):
         return "TABLE CLEAR"
+    if (len(dealerCards) == 0 or len(Playercards) == 0):
+        return "ROUND OVER"
 
 
     return "UNDEFINED"
 
-def PotExsistance(PotTotal, TableProgress):
-    if PotTotal == 0 and TableProgress == "ROUND IN PROGRESS":
-        return "FLUKE PLAY"
-    if PotTotal == 0 and (TableProgress == "ROUND OVER" or TableProgress=="CARDS BEING DELT"):
-        return "INVALAD POT"
+def PotExsistance(PotTotal, TableProgress) -> str:
     if PotTotal != 0 and TableProgress == "TABLE CLEAR":
+        return "BETTING"
+    if PotTotal != 0:
         return "GAME POT"
+    if TableProgress == "CARDS BEING DELT" or TableProgress == "ROUND IN PROGRESS":
+        return "FLUKE PLAY"
+    return "IDLE"
 
 def HandVaule(PlayStatus, DealerCards, PlayerCards):
     PlayerHandValue = [0,0]

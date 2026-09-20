@@ -20,8 +20,8 @@ CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.
 CAM = 1
 IMGSZ = 640
 DEVICE = "cpu"
-CARD_CONF = 0.25
-CHIP_CONF = 0.50
+CARD_CONF = 0.70
+CHIP_CONF = 0.30
 CONF_FRAMES = 22
 
 
@@ -108,6 +108,11 @@ def main():
     EmptyFrames = 0
     POT_HISTORY = []
     PotDiff = 0
+    #max pot in a round 
+    PotWhileClear=0
+    #bet latch guard
+    BetLatched=False
+
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
     print(f"cards: {len(cardModel.names)} classes | chips: {len(chipModel.names)} classes")
@@ -143,15 +148,28 @@ def main():
 
             #Put most rencent hand value into the count card function.
             TableEmpty = (len(reading.PlayerCards) == 0 and len(reading.DealerCards) == 0)
+            #open betting window
+            if TableEmpty:
+                #esure max value will always be read
+                if reading.potTotal > PotWhileClear:
+                    PotWhileClear = reading.potTotal
 
-            if (TableEmpty and PotStatus == "GAME POT"):
+                BetLatched = False
+            #jump into processes if table is not clear and process has jumbed from DC
+            elif(BetLatched == False):
+                #potdiff calc ong
                 if len(POT_HISTORY) == 0:
-                    PotDiff = reading.potTotal
+                    PotDiff = 0
                 else:
-                    previous = POT_HISTORY[-1]
+                    PotDiff = PotWhileClear - POT_HISTORY[-1]
 
-                PotDiff = reading.potTotal - previous 
-                POT_HISTORY.append(reading.potTotal)
+                #add new calculation to ahistory array
+                POT_HISTORY.append(PotDiff)
+
+                #reset values for next itteration
+                PotWhileClear = 0
+                BetLatched = True
+
 
             if TableEmpty:
                 EmptyFrames = EmptyFrames + 1
@@ -165,6 +183,7 @@ def main():
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
                 COUNT = COUNT + Count
                 RemoveCards = True
+
 
 
 
