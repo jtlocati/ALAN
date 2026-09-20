@@ -11,7 +11,7 @@ from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
 from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance, playerHitStatus
-from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE
+from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE, FindLikleyMoveCountSIMPLE
 from cardcount.logic.CountTheCards import HandCount
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
@@ -22,7 +22,7 @@ IMGSZ = 640
 DEVICE = "cpu"
 CARD_CONF = 0.68
 CHIP_CONF = 0.30
-CONF_FRAMES = 22
+CONF_FRAMES = 15
 
 
 
@@ -186,6 +186,7 @@ def main():
                 COUNT = COUNT + Count
                 RemoveCards = True
 
+            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
 
 
 
@@ -204,9 +205,9 @@ def main():
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD: {LikleyMove_NORM}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD NORM: {LikleyMove_NORM} | PLR HND COUNT: {LikleyMove_COUNT}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
-            cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0), 2)
+            cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND NORM: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0), 2)
             cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Winner: {GameProgression}", (10, 150), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"Count: {COUNT}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
