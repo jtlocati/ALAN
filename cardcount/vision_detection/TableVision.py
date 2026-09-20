@@ -105,6 +105,7 @@ def main():
     COUNT = 0
     RemoveCards = False
     CLEAR_FRAMES= 10
+    PLAYER_PROFIT=0
     EmptyFrames = 0
     POT_HISTORY = []
     PotDiff = 0
@@ -200,12 +201,17 @@ def main():
             if showBands:
                 drawBands(frame)
 
+            if GameProgression == "PLAYER":
+                PLAYER_PROFIT += reading.potTotal
+            elif GameProgression == "DEALER":
+                PLAYER_PROFIT -= reading.potTotal
+
             draw(frame, view.dealer, colour=(0, 225, 0))
             draw(frame, view.player, colour=(0, 225, 0))
             draw(frame, view.pot, colour=(255, 200, 0))
             draw(frame, view.unassigned, colour=(0, 140, 255))
 
-            cv2.putText(frame, f"pot >= ${reading.potTotal} | PLR SHOULD NORM: {LikleyMove_NORM} | PLR HND COUNT: {LikleyMove_COUNT}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"pot >= ${reading.potTotal}", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"DEALER HAND {reading.DealerCards} | PLAYER HAND {reading.PlayerCards}", (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"TableStatus = {handProgress} | PLR HND NORM: {HandType}", (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0), 2)
             cv2.putText(frame, f"Player Hand Value: {PlayerHandValue} | Dealer Hand Value: {DealerHandValue}", (10, 120), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 0), 2)
@@ -213,6 +219,10 @@ def main():
             cv2.putText(frame, f"Count: {COUNT}", (10, 180), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.putText(frame, f"Pot Diff: {PotDiff}", (10,210), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.putText(frame, f"Player has hit {PlayerHitStat} times this round", (10,240), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
+            cv2.putText(frame, f"PLR SHOULD NORM: {LikleyMove_NORM} | PLR HND COUNT: {LikleyMove_COUNT}", (10, 270), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"player take: {PLAYER_PROFIT}", (10, 300), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+
+
             cv2.imshow("ALAN - table", frame)
 
             key = cv2.waitKey(1) & 0xFF
