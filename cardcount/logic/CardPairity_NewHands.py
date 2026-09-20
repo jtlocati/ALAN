@@ -104,3 +104,9 @@ def WhoWinner(DealerValue, PlayerValue, HandProgress, Dealer_ace) -> str:
         return "DEALER"
 
     return "PUSH"
+
+def playerHitStatus(PlayerCards) -> int:
+    stat = len(PlayerCards) - 2
+    if stat < 0:
+        return 0
+    return stat

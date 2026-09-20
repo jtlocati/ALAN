@@ -32,6 +32,75 @@ def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, 
         return "HIT"
     return "STAND"
 
+def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
+    if stiffness == "SOFT":
+        if PlayerValue == 16 and dealerValue == 10:
+            if count >= 0:
+                return "STAND"
+            else:
+                return "HIT"
+
+        if PlayerValue == 15 and dealerValue == 10:
+            if count >= 4:
+                return "STAND"
+            else:
+                return "HIT"
+
+        if PlayerValue == 12 and dealerValue == 3:
+            if count >=2:
+                return "STAND"
+            else:
+                return "HIT"
+
+        if PlayerValue == 12 and dealerValue == 2:
+            if count >=3:
+                return "STAND"
+            else:
+                return "HIT"
+
+        if PlayerValue == 12 and dealerValue == 4:
+            if count < 0:
+                return "HIT"
+            else:
+                return "STAND"
+
+        if PlayerValue == 12 and dealerValue == 5:
+            if count < -2:
+                return "HIT"
+            else: 
+                return "STAND"
+
+        if PlayerValue == 12 and dealerValue ==6:
+            if count < -1:
+                return "HIT"
+            else:
+                return "STAND"
+
+        if PlayerValue == 13 and dealerValue == 2:
+            if count < -1:
+                return "HIT"
+            else:
+                return "STAND"
+
+    if stiffness == "SOFT":
+        if PlayerValue <= 17:
+            return "HIT" 
+        else:
+            return "STAND"
+    else:
+        if PlayerValue <= 11:
+            return "HIT"
+        elif PlayerValue >= 17:
+            return "STAND"
+        else:
+            if dealerValue >=7:
+                return "HIT"
+            else:
+                return "STAND"
+
+        
+            
+
 
 
     
