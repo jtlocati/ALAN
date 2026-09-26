@@ -153,31 +153,31 @@ def main():
             TableEmpty = (len(reading.PlayerCards) == 0 and len(reading.DealerCards) == 0)
             #open betting window
             if TableEmpty:
-                #esure max value will always be read
-                if reading.potTotal > PotWhileClear:
-                    PotWhileClear = reading.potTotal
-
-                BetLatched = False
-            #jump into processes if table is not clear and process has jumbed from DC
-            elif(BetLatched == False):
-                #potdiff calc ong
-                if len(POT_HISTORY) == 0:
-                    PotDiff = 0
-                else:
-                    PotDiff = PotWhileClear - POT_HISTORY[-1]
-
-                #add new calculation to ahistory array
-                POT_HISTORY.append(PotDiff)
-
-                #reset values for next itteration
-                PotWhileClear = 0
-                BetLatched = True
-
-
-            if TableEmpty:
                 EmptyFrames = EmptyFrames + 1
             else:
                 EmptyFrames = 0
+
+            if TableEmpty:
+                if EmptyFrames == CLEAR_FRAMES:
+                    #Ensure that this function is used only once per round, giving the dealer to pay out the current round
+                    PotWhileClear = 0
+                    BetLatched = False
+                #ensure that the max value is always read
+                if (BetLatched == False and reading.potTotal > PotWhileClear):
+                    PotWhileClear = reading.potTotal
+            #if table has reached a consesus on the table
+            #First round == 0, nothing to compare to
+            elif(BetLatched == False):
+                if len(POT_HISTORY) == 0:
+                    PotDiff = 0
+                else:
+                    #find true pot diff
+                    PotDiff = PotWhileClear  - POT_HISTORY[-1]
+            POT_HISTORY.append(PotWhileClear)
+
+            #Close branch for next process
+            BetLatched  = True
+
 
             if EmptyFrames > CLEAR_FRAMES:
                 RemoveCards = False
