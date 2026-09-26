@@ -186,6 +186,10 @@ def main():
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
                 COUNT = COUNT + Count
                 RemoveCards = True
+                if GameProgression == "PLAYER":
+                    PLAYER_PROFIT += reading.potTotal
+                elif GameProgression == "DEALER":
+                    PLAYER_PROFIT -= reading.potTotal
 
             LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
 
@@ -200,11 +204,6 @@ def main():
 
             if showBands:
                 drawBands(frame)
-
-            if GameProgression == "PLAYER":
-                PLAYER_PROFIT += reading.potTotal
-            elif GameProgression == "DEALER":
-                PLAYER_PROFIT -= reading.potTotal
 
             draw(frame, view.dealer, colour=(0, 225, 0))
             draw(frame, view.player, colour=(0, 225, 0))
