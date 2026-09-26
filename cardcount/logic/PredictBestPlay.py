@@ -28,12 +28,38 @@ def FindLikleyMoveNorm(RoundProgression, DealerHandValue, PlayeHandValue, HandTy
 
 
 def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, HandType, D_ace) -> str:
-    if DealerHandValue[0] + 10 > PlayeHandValue[0] or DealerHandValue[1] + 10 > PlayeHandValue[1]:
-        return "HIT"
-    return "STAND"
+    if DealerHandValue == 0:
+        return "NONE"
+    if HandType == "SOFT":
+        #soft 17 or > 17 are HIT, cannot loose from them, all SOFT > 17 should be stelt on
+        if PlayeHandValue[1] <= 17:
+            return "HIT"
+        else:
+            return "STAND"
+    else:
+        # >=11 cannot bust, must hit.
+        if PlayeHandValue[0] <= 11:
+            return "HIT"
+        elif PlayeHandValue[0] >= 17:
+            return "STAND"
 
+        # 12 is dependent on dealer hand value
+
+        elif PlayeHandValue[0] == 12:
+            if  4 <= DealerHandValue <= 6:
+                return "STAND"
+            else:
+                return "HIT"
+
+        else:
+            if DealerHandValue >= 7:
+                return "HIT"
+            else: 
+                return "STAND"
 def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
-    if stiffness == "SOFT":
+    if dealerValue == 0:
+        return "NONE"
+    if stiffness == "HARD":
         if PlayerValue == 16 and dealerValue == 10:
             if count >= 0:
                 return "STAND"
