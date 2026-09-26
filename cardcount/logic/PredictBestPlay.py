@@ -27,7 +27,9 @@ def FindLikleyMoveNorm(RoundProgression, DealerHandValue, PlayeHandValue, HandTy
         return "STAND"
 
 
-def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, HandType, D_ace) -> str:
+def FindLikleyMoveNormSIMPLE(DealerCards, RoundProgression, DealerHandValue, PlayeHandValue, HandType, D_ace) -> str:
+    if len(DealerCards)>1:
+        return "PLAYER HAS STOOD"
     if DealerHandValue == 0:
         return "NONE"
     if HandType == "SOFT":
@@ -55,7 +57,8 @@ def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, 
             if DealerHandValue >= 7:
                 return "HIT"
             else: 
-                return "STAND"
+                return "STAND" \
+                ""
 def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
     if dealerValue == 0:
         return "NONE"
