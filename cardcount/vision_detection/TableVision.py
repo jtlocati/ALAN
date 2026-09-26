@@ -145,6 +145,8 @@ def main():
 
             LikleyMove_NORM = FindLikleyMoveNormSIMPLE(reading.DealerCards,handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
 
+            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(reading.DealerCards ,COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
+
             PotStatus = PotExsistance(reading.potTotal, handProgress)
 
             PlayerHitStat = playerHitStatus(reading.PlayerCards)
@@ -190,8 +192,6 @@ def main():
                     PLAYER_PROFIT += reading.potTotal
                 elif GameProgression == "DEALER":
                     PLAYER_PROFIT -= reading.potTotal
-
-            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(reading.DealerCards ,COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
 
 
 
