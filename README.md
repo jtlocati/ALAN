@@ -206,18 +206,9 @@ Use `opencv-python` and not `opencv-python-headless`. They install into the same
 
 ## Known limitations
 
-**The count is incomplete.** `HandCount` runs once per round on the cards that survive to the end of it. Burn cards, the dealer hole card and anything swept early never enter the count, so `COUNT` is a lossy subset of what a real counter would be holding. Every correlation computed against it is attenuated by that error. This is the largest single source of inaccuracy in the system.
-
-**Running count, not true count.** Index plays are defined in true count, which is the running count divided by the decks remaining. A running count of +6 with five decks left and the same +6 with one deck left call for different play. Fixing this depends on fixing the point above, since it needs a reliable count of cards seen.
-
 **The likelihood ratios are estimates.** The frequency ratios above were chosen to be the right order of magnitude, not measured from real sessions. Until they are calibrated against recorded play, the output is a ranking rather than a calibrated probability.
 
 **One seat only.** `zones.py` defines a single player band, so a second player at the table would fold into the same running total. Making this per person means keying the log odds, bet history and per round state by seat.
 
 **No identity tracking.** The score follows the seat, not the person. If a player leaves and someone else sits down, the accumulated evidence carries over until the decay erodes it, which takes roughly 35 rounds to halve. Reset the log odds between subjects when testing.
 
-**Blackjack pays even money.** The vision layer cannot distinguish a natural 21 from a drawn one, so a blackjack is recorded as a normal win rather than 3:2. Doubles and splits also risk more than the latched bet and are recorded as though they did not, which understates variance.
-
-## A note on what this measures
-
-The metric scores behaviour that is consistent with counting. It does not detect counting, and it cannot. A player who counts perfectly in their head and never acts on it reads as clear, which is correct in the sense that matters to a casino and incorrect in the literal sense. Counting cards is also not illegal in most jurisdictions. This is a computer vision and inference exercise, and anything built on it should be treated with that in mind.
