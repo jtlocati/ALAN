@@ -4,7 +4,6 @@ A top down camera watches a blackjack table, reads the cards and chips with two 
 
 ![ALAN running on a live table](docs/readme_header.png)
 
-> Put your screenshot at `docs/readme_header.png` and this image will render. Create the `docs/` folder at the repo root if it does not exist yet. Delete this line once the image is in.
 
 ## What it does
 
