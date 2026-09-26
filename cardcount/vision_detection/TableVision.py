@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance, playerHitStatus
 from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE, FindLikleyMoveCountSIMPLE
 from cardcount.logic.CountTheCards import HandCount
+from cardcount.logic.RiskAgg.RiskEval import StartingOdds, DecayOdds, aggregatePlayerRisk
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt"
@@ -45,7 +46,7 @@ def readTable(view, gate) -> TableReading:
     #find cards per person + the count it holds
     for detection in view.dealer:
         dealerKey = ("dealer", detection.label)
-        #Recall the given card @ location [key] include an additional +1 trakcer per carrd instance 
+        #Recall the given card @ location [key] include an additional +1 trakcer per carrd instance
         observed[dealerKey] = observed[dealerKey] + 1
 
     for detection in view.player:
@@ -61,7 +62,7 @@ def readTable(view, gate) -> TableReading:
         role = roleLabel[0]
         card = roleLabel[1]
 
-        for _ in range(cardCount): 
+        for _ in range(cardCount):
             if role == "dealer":
                 dealer_cards.append(card)
             else:
@@ -109,10 +110,20 @@ def main():
     EmptyFrames = 0
     POT_HISTORY = []
     PotDiff = 0
-    #max pot in a round 
+    #max pot in a round
     PotWhileClear=0
     #bet latch guard
     BetLatched=False
+    #running evidence total for this player
+    LOG_ODDS = StartingOdds()
+    RiskScore = 0
+    RiskWord = "SAMPLING"
+    #state carried between frames so a new card reads as a decision
+    PrevHits = 0
+    PrevNORM = "NONE"
+    PrevCOUNT = "NONE"
+    #one row per resolved round: count held at bet time, profit, stake
+    ROUND_RESULTS = []
 
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
@@ -143,7 +154,7 @@ def main():
 
             GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress, Dealer_ace, reading.DealerCards)
 
-            LikleyMove_NORM = FindLikleyMoveNormSIMPLE(reading.DealerCards,handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
+            LikleyMove_NORM = FindLikleyMoveNormSIMPLE(reading.DealerCards,handProgress, DealerHandValue[1], PlayerHandValue, HandType, Dealer_ace)
 
             LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(reading.DealerCards ,COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
 
@@ -164,6 +175,9 @@ def main():
                     #Ensure that this function is used only once per round, giving the dealer to pay out the current round
                     PotWhileClear = 0
                     BetLatched = False
+                    PrevHits = 0
+                    PrevNORM = "NONE"
+                    PrevCOUNT = "NONE"
                 #ensure that the max value is always read
                 if (BetLatched == False and reading.potTotal > PotWhileClear):
                     PotWhileClear = reading.potTotal
@@ -175,28 +189,58 @@ def main():
                 else:
                     #find true pot diff
                     PotDiff = PotWhileClear  - POT_HISTORY[-1]
-            POT_HISTORY.append(PotWhileClear)
 
-            #Close branch for next process
-            BetLatched  = True
+                POT_HISTORY.append(PotWhileClear)
+
+                LOG_ODDS = DecayOdds(LOG_ODDS)
+                LOG_ODDS, RiskScore, RiskWord = aggregatePlayerRisk(PotWhileClear, PLAYER_PROFIT, COUNT, PlayerHitStat, "NONE", "NONE", LOG_ODDS, "NONE", PotDiff, ROUND_RESULTS, POT_HISTORY)
+
+                #Close branch for next process
+                BetLatched  = True
 
 
             if EmptyFrames > CLEAR_FRAMES:
                 RemoveCards = False
 
+            if handProgress == "ROUND IN PROGRESS":
+                if (PlayerHitStat > PrevHits and PrevNORM != "NONE"):
+                    LOG_ODDS, RiskScore, RiskWord = aggregatePlayerRisk(reading.potTotal, PLAYER_PROFIT, COUNT, PlayerHitStat, PrevNORM, PrevCOUNT, LOG_ODDS, "HIT", 0, ROUND_RESULTS, POT_HISTORY)
+
+                PrevHits = PlayerHitStat
+
+                if (LikleyMove_NORM == "HIT" or LikleyMove_NORM == "STAND"):
+                    PrevNORM = LikleyMove_NORM
+                    PrevCOUNT = LikleyMove_COUNT
+
             if (RemoveCards == False and GameProgression != "NON-RES" and handProgress == "ROUND IN PROGRESS"):
+                if (PlayerHandValue[0] <= 21 and PrevNORM != "NONE"):
+                    LOG_ODDS, RiskScore, RiskWord = aggregatePlayerRisk(reading.potTotal, PLAYER_PROFIT, COUNT, PlayerHitStat, PrevNORM, PrevCOUNT, LOG_ODDS, "STAND", 0, ROUND_RESULTS, POT_HISTORY)
+
+                CountBefore = COUNT
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
                 COUNT = COUNT + Count
                 RemoveCards = True
+
+                if len(POT_HISTORY) > 0:
+                    RoundBet = POT_HISTORY[-1]
+                else:
+                    RoundBet = 0
+
+                RoundProfit = 0
+
                 if GameProgression == "PLAYER":
-                    PLAYER_PROFIT += reading.potTotal
+                    RoundProfit = RoundBet
                 elif GameProgression == "DEALER":
-                    PLAYER_PROFIT -= reading.potTotal
+                    RoundProfit = 0 - RoundBet
+
+                PLAYER_PROFIT = PLAYER_PROFIT + RoundProfit
+
+                ROUND_RESULTS.append((CountBefore, RoundProfit, RoundBet))
 
 
 
 
-            
+
             if view.unassigned:
                 print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
 
@@ -220,6 +264,8 @@ def main():
             cv2.putText(frame, f"Player has hit {PlayerHitStat} times this round", (10,240), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.putText(frame, f"PLR SHOULD NORM: {LikleyMove_NORM} | PLR HND COUNT: {LikleyMove_COUNT}", (10, 270), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"player take: {PLAYER_PROFIT}", (10, 300), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"COUNTER RISK: {RiskScore}% {RiskWord}", (10, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 225), 2)
+            cv2.putText(frame, f"rounds {len(POT_HISTORY)} | results {len(ROUND_RESULTS)} | odds {LOG_ODDS:.1f}", (10, 360), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
 
             cv2.imshow("ALAN - table", frame)

@@ -1,5 +1,5 @@
 #OMG LOOK AT ALL THESE COMMENTS :)
-from AggSecrets import *
+from cardcount.logic.RiskAgg.AggSecrets import *
 import math
 
 #defines log odds of prior rounds as a float
@@ -25,7 +25,7 @@ def ScoreMove(PlayerMove, PlayerHits, PlayerCharNORM, playerCharCOUNT) -> float:
     #once dealer has drawn:
     if (PlayerCharNORM != "HIT" and PlayerCharNORM != "STAND"):
         return 0.0
-    if (PlayerCharNORM != "HIT" and playerCharCOUNT != "STAND"):
+    if (playerCharCOUNT != "HIT" and playerCharCOUNT != "STAND"):
         return 0.0
 
     #if both player preciction models have the same outcome -> void round as no difference or meaningfull tell can be derived
@@ -37,8 +37,10 @@ def ScoreMove(PlayerMove, PlayerHits, PlayerCharNORM, playerCharCOUNT) -> float:
 
     #The tow player prediction models != oneanother
 
-    if PlayerMove == PlayerCharNORM:
+    if PlayerMove == playerCharCOUNT:
         return LLR_DEV_COUNT
+    if PlayerMove == PlayerCharNORM:
+        return LLR_DEV_NORM
     return LLR_STRAT_ERROR
 
 #pot trend analysis
@@ -67,6 +69,47 @@ def ScorePot(PotTotal, PotDiff, Count) -> float:
 
     #ALL Else is char of stinky normie
     return LLR_BET_AGAINST
+
+
+#ratio of the biggest bet to the smallest
+def BetSpread(POT_HISTORY) -> float:
+    Bets = []
+
+    for Bet in POT_HISTORY:
+        if (Bet > 0):
+            Bets.append(Bet)
+
+    #one bet has no spread
+    if (len(Bets) < 2):
+        return 1.0
+
+    Low = min(Bets)
+    High = max(Bets)
+
+    if (Low <= 0):
+        return 1.0
+
+    return High / Low
+
+#a flat bettor cannot profit off a count, so this counts against them
+def ScoreSpread(POT_HISTORY) -> float:
+    if (len(POT_HISTORY) < SPREAD_WINDOW):
+        return 0.0
+
+    if (BetSpread(POT_HISTORY) < SPREAD_MIN):
+        return LLR_FLAT_BETTOR
+
+    return 0.0
+
+#hard ceiling rather than another additive term
+def SpreadCeiling(POT_HISTORY) -> int:
+    if (len(POT_HISTORY) < SPREAD_WINDOW):
+        return 100
+
+    if (BetSpread(POT_HISTORY) < SPREAD_MIN):
+        return SPRED_CAP
+
+    return 100
 
 
 #find if a players take is un-usual
@@ -193,6 +236,24 @@ def RiskPercent(LogOdds, playerTake, ROUND_RESULTS, POT_HISTORY) -> int:
         return Ceiling
  
     return Percent
+
+
+#word shown beside the number on the overlay
+def RiskLabel(RiskScore, Rounds) -> str:
+    #a clean player and an unwatched player both read zero, so say which
+    if (Rounds < 5):
+        return "SAMPLING"
+
+    if (RiskScore >= 80):
+        return "COUNTING"
+
+    if (RiskScore >= 50):
+        return "WATCH"
+
+    if (RiskScore >= 20):
+        return "ELEVATED"
+
+    return "CLEAR"
 
 
 def aggregatePlayerRisk(PotTotal, playerTake, Count, PlayerHits, PlayerCharNORM, PlayerCharCOUNT, LogOdds, ActualMove, PotDiff, ROUND_RESULTS, POT_HISTORY):
