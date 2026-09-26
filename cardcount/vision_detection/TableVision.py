@@ -141,7 +141,7 @@ def main():
 
             PlayerHandValue, DealerHandValue, HandType, Dealer_ace = HandVaule(handProgress, reading.DealerCards, reading.PlayerCards)
 
-            GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress, Dealer_ace)
+            GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress, Dealer_ace, reading.DealerCards)
 
             LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
 

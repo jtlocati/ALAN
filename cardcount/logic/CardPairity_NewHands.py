@@ -80,7 +80,9 @@ def DealerMustHit(DealerValue, Dealer_ace) -> bool:
     return False
 
 
-def WhoWinner(DealerValue, PlayerValue, HandProgress, Dealer_ace) -> str:
+def WhoWinner(DealerValue, PlayerValue, HandProgress, Dealer_ace, dealer_num_cards) -> str:
+    if len(dealer_num_cards) == 1 and PlayerValue[1] == 21:
+        return "PLAYER"
     # Busts resolve the instant they happen, whatever the round status.
     if (PlayerValue[0] > 21):
         return "DEALER"
