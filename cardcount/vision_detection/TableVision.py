@@ -191,7 +191,7 @@ def main():
                 elif GameProgression == "DEALER":
                     PLAYER_PROFIT -= reading.potTotal
 
-            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
+            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(reading.DealerCards ,COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
 
 
 

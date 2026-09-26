@@ -59,7 +59,9 @@ def FindLikleyMoveNormSIMPLE(DealerCards, RoundProgression, DealerHandValue, Pla
             else: 
                 return "STAND" \
                 ""
-def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
+def FindLikleyMoveCountSIMPLE(dealer_cards, count, stiffness, dealerValue, PlayerValue):
+    if len(dealer_cards)>1:
+        return "PLAYER HAS STOOD"
     if dealerValue == 0:
         return "NONE"
     if stiffness == "HARD":
