@@ -10,9 +10,10 @@ from cardcount.vision.zones import drawBands
 from cardcount.logic.ConfirmCount import StreakGate
 from collections import Counter
 from dataclasses import dataclass
-from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance, playerHitStatus
+from cardcount.logic.CardPairity_NewHands import IsPlaying, HandVaule, WhoWinner, PotExsistance, playerHitStatus, UpcardValue
 from cardcount.logic.PredictBestPlay import FindLikleyMoveNorm, FindLikleyMoveNormSIMPLE, FindLikleyMoveCountSIMPLE
 from cardcount.logic.CountTheCards import HandCount
+from cardcount.logic.RiskEval import StartingOdds, DecayOdds, aggregatePlayerRisk, RiskPercent, RiskLabel
 
 CHIP_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\chips_best.pt"
 CARD_WEIGHT = r"C:\Users\jetlo\OneDrive\Documents\GitHub\ALAN\models\cards_best.pt"
@@ -45,7 +46,7 @@ def readTable(view, gate) -> TableReading:
     #find cards per person + the count it holds
     for detection in view.dealer:
         dealerKey = ("dealer", detection.label)
-        #Recall the given card @ location [key] include an additional +1 trakcer per carrd instance 
+        #Recall the given card @ location [key] include an additional +1 trakcer per carrd instance
         observed[dealerKey] = observed[dealerKey] + 1
 
     for detection in view.player:
@@ -61,7 +62,7 @@ def readTable(view, gate) -> TableReading:
         role = roleLabel[0]
         card = roleLabel[1]
 
-        for _ in range(cardCount): 
+        for _ in range(cardCount):
             if role == "dealer":
                 dealer_cards.append(card)
             else:
@@ -109,10 +110,19 @@ def main():
     EmptyFrames = 0
     POT_HISTORY = []
     PotDiff = 0
-    #max pot in a round 
+    #max pot in a round
     PotWhileClear=0
     #bet latch guard
     BetLatched=False
+    #running evidence total, starts at the prior odds of any given player counting
+    LOG_ODDS = StartingOdds()
+    #dealer card the player was looking at when they made their choice
+    DealerUpcard = 0
+    #state carried from the previous frame so a new card can be read as a decision
+    PrevHits = 0
+    PrevNORM = "NONE"
+    PrevCOUNT = "NONE"
+    DECISIONS = 0
 
     cardModel = Detector(CARD_WEIGHT, IMGSZ, DEVICE)
     chipModel = Detector(CHIP_WEIGHT, IMGSZ, DEVICE)
@@ -143,7 +153,14 @@ def main():
 
             GameProgression = WhoWinner(DealerHandValue, PlayerHandValue, handProgress, Dealer_ace, reading.DealerCards)
 
-            LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerHandValue, PlayerHandValue, HandType, Dealer_ace)
+            #hole card is face down so a single dealer card is the upcard, hold it for the round
+            if len(reading.DealerCards) == 1:
+                DealerUpcard = UpcardValue(reading.DealerCards)
+
+            LikleyMove_NORM = FindLikleyMoveNormSIMPLE(handProgress, DealerUpcard, PlayerHandValue, HandType, Dealer_ace)
+
+            #COUNT here is still the total from finished rounds, which is what the player was holding
+            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(COUNT, HandType, DealerUpcard, PlayerHandValue[1])
 
             PotStatus = PotExsistance(reading.potTotal, handProgress)
 
@@ -162,6 +179,10 @@ def main():
                     #Ensure that this function is used only once per round, giving the dealer to pay out the current round
                     PotWhileClear = 0
                     BetLatched = False
+                    DealerUpcard = 0
+                    PrevHits = 0
+                    PrevNORM = "NONE"
+                    PrevCOUNT = "NONE"
                 #ensure that the max value is always read
                 if (BetLatched == False and reading.potTotal > PotWhileClear):
                     PotWhileClear = reading.potTotal
@@ -173,16 +194,36 @@ def main():
                 else:
                     #find true pot diff
                     PotDiff = PotWhileClear  - POT_HISTORY[-1]
-            POT_HISTORY.append(PotWhileClear)
 
-            #Close branch for next process
-            BetLatched  = True
+                POT_HISTORY.append(PotWhileClear)
+
+                #one decay per round, then this round's bet is weighed against the count
+                LOG_ODDS = DecayOdds(LOG_ODDS)
+                LOG_ODDS = aggregatePlayerRisk(LOG_ODDS, PotDiff, COUNT, "NONE", "NONE", "NONE")
+
+                #Close branch for next process
+                BetLatched  = True
 
 
             if EmptyFrames > CLEAR_FRAMES:
                 RemoveCards = False
 
+            #a new player card during a live round is a hit, judged against last frame's two predictions
+            if handProgress == "ROUND IN PROGRESS":
+                if (PlayerHitStat > PrevHits and PrevNORM != "NONE"):
+                    LOG_ODDS = aggregatePlayerRisk(LOG_ODDS, 0, COUNT, "HIT", PrevNORM, PrevCOUNT)
+                    DECISIONS = DECISIONS + 1
+
+                PrevHits = PlayerHitStat
+                PrevNORM = LikleyMove_NORM
+                PrevCOUNT = LikleyMove_COUNT
+
             if (RemoveCards == False and GameProgression != "NON-RES" and handProgress == "ROUND IN PROGRESS"):
+                #round resolved with the player still alive, so they chose to stop taking cards
+                if (PlayerHandValue[0] <= 21 and PrevNORM != "NONE"):
+                    LOG_ODDS = aggregatePlayerRisk(LOG_ODDS, 0, COUNT, "STAND", PrevNORM, PrevCOUNT)
+                    DECISIONS = DECISIONS + 1
+
                 Count = HandCount(reading.PlayerCards, reading.DealerCards)
                 COUNT = COUNT + Count
                 RemoveCards = True
@@ -191,12 +232,13 @@ def main():
                 elif GameProgression == "DEALER":
                     PLAYER_PROFIT -= reading.potTotal
 
-            LikleyMove_COUNT = FindLikleyMoveCountSIMPLE(COUNT, HandType, DealerHandValue[1], PlayerHandValue[1])
+            RiskScore = RiskPercent(LOG_ODDS, PLAYER_PROFIT, POT_HISTORY)
+            RiskWord = RiskLabel(RiskScore, len(POT_HISTORY))
 
 
 
 
-            
+
             if view.unassigned:
                 print(f"  !! cards in the betting band: {[d.label for d in view.unassigned]}")
 
@@ -220,6 +262,8 @@ def main():
             cv2.putText(frame, f"Player has hit {PlayerHitStat} times this round", (10,240), cv2.FONT_HERSHEY_SIMPLEX,  0.8, (0, 0, 225), 2)
             cv2.putText(frame, f"PLR SHOULD NORM: {LikleyMove_NORM} | PLR HND COUNT: {LikleyMove_COUNT}", (10, 270), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
             cv2.putText(frame, f"player take: {PLAYER_PROFIT}", (10, 300), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
+            cv2.putText(frame, f"COUNTER RISK: {RiskScore}% {RiskWord}", (10, 330), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 225), 2)
+            cv2.putText(frame, f"rounds {len(POT_HISTORY)} | decisions {DECISIONS} | upcard {DealerUpcard}", (10, 360), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 0), 2)
 
 
             cv2.imshow("ALAN - table", frame)

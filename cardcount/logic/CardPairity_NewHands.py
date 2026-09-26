@@ -112,3 +112,16 @@ def playerHitStatus(PlayerCards) -> int:
     if stat < 0:
         return 0
     return stat
+
+def UpcardValue(DealerCards) -> int:
+    if len(DealerCards) == 0:
+        return 0
+
+    Card = DealerCards[0]
+
+    try:
+        return int(Card)
+    except ValueError:
+        if Card == "A":
+            return 11
+        return 10

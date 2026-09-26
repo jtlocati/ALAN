@@ -27,13 +27,36 @@ def FindLikleyMoveNorm(RoundProgression, DealerHandValue, PlayeHandValue, HandTy
         return "STAND"
 
 
-def FindLikleyMoveNormSIMPLE(RoundProgression, DealerHandValue, PlayeHandValue, HandType, D_ace) -> str:
-    if DealerHandValue[0] + 10 > PlayeHandValue[0] or DealerHandValue[1] + 10 > PlayeHandValue[1]:
-        return "HIT"
-    return "STAND"
+def FindLikleyMoveNormSIMPLE(RoundProgression, DealerUpcard, PlayeHandValue, HandType, D_ace) -> str:
+    if DealerUpcard == 0:
+        return "NONE"
+
+    if HandType == "SOFT":
+        if PlayeHandValue[1] <= 17:
+            return "HIT"
+        else:
+            return "STAND"
+    else:
+        if PlayeHandValue[0] <= 11:
+            return "HIT"
+        elif PlayeHandValue[0] >= 17:
+            return "STAND"
+        elif PlayeHandValue[0] == 12:
+            if 4 <= DealerUpcard <= 6:
+                return "STAND"
+            else:
+                return "HIT"
+        else:
+            if DealerUpcard >= 7:
+                return "HIT"
+            else:
+                return "STAND"
 
 def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
-    if stiffness == "SOFT":
+    if dealerValue == 0:
+        return "NONE"
+
+    if stiffness == "HARD":
         if PlayerValue == 16 and dealerValue == 10:
             if count >= 0:
                 return "STAND"
@@ -67,7 +90,7 @@ def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
         if PlayerValue == 12 and dealerValue == 5:
             if count < -2:
                 return "HIT"
-            else: 
+            else:
                 return "STAND"
 
         if PlayerValue == 12 and dealerValue ==6:
@@ -84,7 +107,7 @@ def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
 
     if stiffness == "SOFT":
         if PlayerValue <= 17:
-            return "HIT" 
+            return "HIT"
         else:
             return "STAND"
     else:
@@ -98,9 +121,9 @@ def FindLikleyMoveCountSIMPLE(count, stiffness, dealerValue, PlayerValue):
             else:
                 return "STAND"
 
-        
-            
 
 
 
-    
+
+
+
